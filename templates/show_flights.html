@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flights</title>
+</head>
+<body>
+<form action="/select_flight" method="POST">
+<table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Select</th>
+            <th>Flight ID</th>
+            <th>Flight Duration</th>
+            <th>Departure Time</th>
+            <th>Departure Date</th>
+            <th>Origin Airport</th>
+            <th>Destination Airport</th>
+            <th>Aircraft ID</th>
+            <th>Arrival Date</th>
+            <th>Arrival Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for flight in flights %}
+        <tr>
+            <td>
+                <input type="radio" name="flight_id" value="{{ flight[0] }}" required>
+            </td>
+            <td>{{ flight[0] }}</td>
+            <td>{{ flight[1] / 60 }} hours</td>
+            <td>{{ flight[2] }}</td>
+            <td>{{ flight[3] }}</td>
+            <td>{{ flight[4] }}</td>
+            <td>{{ flight[5] }}</td>
+            <td>{{ flight[6] }} </td>
+            <td>{{ flight[7] }} </td>
+            <td>{{ flight[8] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<input type="submit" value="Select Flight">
+
+</form>
+</body>
+</html>

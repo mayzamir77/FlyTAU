@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>signup</title>
+</head>
+<body>
+
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+    <p>
+        Already signed up?
+        <a href="/login">Login</a>
+    </p>
+
+{% endif %}
+    <div>
+        <h1>Sign Up</h1>
+        <form action="/signup" method="POST">
+            <input placeholder="Email" autocomplete="off" type="email" name="email" maxlength="100" required>
+            <br><br>
+            <input placeholder="First Name in English" type="text" name="first_name" maxlength="50" required>
+            <br><br>
+            <input placeholder="Last Name in English" type="text" name="last_name" maxlength="50" required>
+            <br><br>
+            <input placeholder="Passport Number" type="text" name="passport_number" maxlength="20" required>
+            <br><br>
+            <input type="date" name="birth_date" required>
+            <br><br>
+            <input placeholder="Password" type="password" name="password" maxlength="100" required>
+            <br><br>
+
+            <input type="submit" value="Sign Up">
+        </form>
+    </div>
+</body>
+
+</html>
