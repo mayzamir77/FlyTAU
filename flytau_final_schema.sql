@@ -36,6 +36,15 @@ CREATE TABLE `aircraft` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `aircraft`
+--
+
+LOCK TABLES `aircraft` WRITE;
+/*!40000 ALTER TABLE `aircraft` DISABLE KEYS */;
+/*!40000 ALTER TABLE `aircraft` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `booking`
 --
 
@@ -48,6 +57,7 @@ CREATE TABLE `booking` (
   `flight_id` varchar(20) NOT NULL,
   `booking_date` date DEFAULT NULL,
   `booking_status` varchar(50) NOT NULL,
+  `payment` decimal(10,2) DEFAULT '0.00',
   PRIMARY KEY (`booking_id`),
   KEY `customer_email` (`customer_email`),
   KEY `flight_id` (`flight_id`),
@@ -56,6 +66,15 @@ CREATE TABLE `booking` (
   CONSTRAINT `booking_chk_1` CHECK ((`booking_status` in (_utf8mb4'Active',_utf8mb4'Completed',_utf8mb4'Customer Cancellation',_utf8mb4'System Cancellation')))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `booking`
+--
+
+LOCK TABLES `booking` WRITE;
+/*!40000 ALTER TABLE `booking` DISABLE KEYS */;
+/*!40000 ALTER TABLE `booking` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `class`
@@ -74,6 +93,15 @@ CREATE TABLE `class` (
   CONSTRAINT `class_chk_1` CHECK ((`class_type` in (_utf8mb4'economy',_utf8mb4'business')))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `class`
+--
+
+LOCK TABLES `class` WRITE;
+/*!40000 ALTER TABLE `class` DISABLE KEYS */;
+/*!40000 ALTER TABLE `class` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `classes_in_flight`
@@ -96,6 +124,15 @@ CREATE TABLE `classes_in_flight` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `classes_in_flight`
+--
+
+LOCK TABLES `classes_in_flight` WRITE;
+/*!40000 ALTER TABLE `classes_in_flight` DISABLE KEYS */;
+/*!40000 ALTER TABLE `classes_in_flight` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `customer`
 --
 
@@ -109,6 +146,15 @@ CREATE TABLE `customer` (
   PRIMARY KEY (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `customer`
+--
+
+LOCK TABLES `customer` WRITE;
+/*!40000 ALTER TABLE `customer` DISABLE KEYS */;
+/*!40000 ALTER TABLE `customer` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `customer_phone_numbers`
@@ -126,6 +172,15 @@ CREATE TABLE `customer_phone_numbers` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `customer_phone_numbers`
+--
+
+LOCK TABLES `customer_phone_numbers` WRITE;
+/*!40000 ALTER TABLE `customer_phone_numbers` DISABLE KEYS */;
+/*!40000 ALTER TABLE `customer_phone_numbers` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `flight`
 --
 
@@ -134,7 +189,6 @@ DROP TABLE IF EXISTS `flight`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `flight` (
   `flight_id` varchar(20) NOT NULL,
-  `flight_duration` int NOT NULL,
   `flight_status` varchar(20) NOT NULL,
   `departure_time` time NOT NULL,
   `departure_date` date NOT NULL,
@@ -143,10 +197,21 @@ CREATE TABLE `flight` (
   `aircraft_id` varchar(50) NOT NULL,
   PRIMARY KEY (`flight_id`),
   KEY `aircraft_id` (`aircraft_id`),
+  KEY `origin_airport` (`origin_airport`,`destination_airport`),
   CONSTRAINT `flight_ibfk_1` FOREIGN KEY (`aircraft_id`) REFERENCES `aircraft` (`aircraft_id`),
+  CONSTRAINT `flight_ibfk_2` FOREIGN KEY (`origin_airport`, `destination_airport`) REFERENCES `routes` (`origin_airport`, `destination_airport`),
   CONSTRAINT `flight_chk_1` CHECK ((`flight_status` in (_utf8mb4'Active',_utf8mb4'Fully Booked',_utf8mb4'Completed',_utf8mb4'Cancelled')))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `flight`
+--
+
+LOCK TABLES `flight` WRITE;
+/*!40000 ALTER TABLE `flight` DISABLE KEYS */;
+/*!40000 ALTER TABLE `flight` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `flight_attendants`
@@ -170,6 +235,15 @@ CREATE TABLE `flight_attendants` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `flight_attendants`
+--
+
+LOCK TABLES `flight_attendants` WRITE;
+/*!40000 ALTER TABLE `flight_attendants` DISABLE KEYS */;
+/*!40000 ALTER TABLE `flight_attendants` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `flight_attendants_assignment`
 --
 
@@ -185,6 +259,15 @@ CREATE TABLE `flight_attendants_assignment` (
   CONSTRAINT `flight_attendants_assignment_ibfk_2` FOREIGN KEY (`attendant_id`) REFERENCES `flight_attendants` (`attendant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `flight_attendants_assignment`
+--
+
+LOCK TABLES `flight_attendants_assignment` WRITE;
+/*!40000 ALTER TABLE `flight_attendants_assignment` DISABLE KEYS */;
+/*!40000 ALTER TABLE `flight_attendants_assignment` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `managers`
@@ -208,6 +291,15 @@ CREATE TABLE `managers` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `managers`
+--
+
+LOCK TABLES `managers` WRITE;
+/*!40000 ALTER TABLE `managers` DISABLE KEYS */;
+/*!40000 ALTER TABLE `managers` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `pilots`
 --
 
@@ -229,6 +321,15 @@ CREATE TABLE `pilots` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `pilots`
+--
+
+LOCK TABLES `pilots` WRITE;
+/*!40000 ALTER TABLE `pilots` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pilots` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `pilots_assignment`
 --
 
@@ -244,6 +345,15 @@ CREATE TABLE `pilots_assignment` (
   CONSTRAINT `pilots_assignment_ibfk_2` FOREIGN KEY (`pilot_id`) REFERENCES `pilots` (`pilot_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pilots_assignment`
+--
+
+LOCK TABLES `pilots_assignment` WRITE;
+/*!40000 ALTER TABLE `pilots_assignment` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pilots_assignment` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `registered_customer`
@@ -264,6 +374,39 @@ CREATE TABLE `registered_customer` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `registered_customer`
+--
+
+LOCK TABLES `registered_customer` WRITE;
+/*!40000 ALTER TABLE `registered_customer` DISABLE KEYS */;
+/*!40000 ALTER TABLE `registered_customer` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `routes`
+--
+
+DROP TABLE IF EXISTS `routes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `routes` (
+  `origin_airport` varchar(10) NOT NULL,
+  `destination_airport` varchar(10) NOT NULL,
+  `flight_duration_mins` int DEFAULT NULL,
+  PRIMARY KEY (`origin_airport`,`destination_airport`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `routes`
+--
+
+LOCK TABLES `routes` WRITE;
+/*!40000 ALTER TABLE `routes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `routes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `seat`
 --
 
@@ -281,26 +424,13 @@ CREATE TABLE `seat` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `seats_in_flights`
+-- Dumping data for table `seat`
 --
 
-DROP TABLE IF EXISTS `seats_in_flights`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `seats_in_flights` (
-  `flight_id` varchar(20) NOT NULL,
-  `aircraft_id` varchar(50) NOT NULL,
-  `class_type` varchar(20) NOT NULL,
-  `row_num` int NOT NULL,
-  `column_letter` char(1) NOT NULL,
-  `seat_status` varchar(10) DEFAULT NULL,
-  PRIMARY KEY (`flight_id`,`aircraft_id`,`class_type`,`row_num`,`column_letter`),
-  KEY `aircraft_id` (`aircraft_id`,`class_type`,`row_num`,`column_letter`),
-  CONSTRAINT `seats_in_flights_ibfk_1` FOREIGN KEY (`flight_id`) REFERENCES `flight` (`flight_id`),
-  CONSTRAINT `seats_in_flights_ibfk_2` FOREIGN KEY (`aircraft_id`, `class_type`, `row_num`, `column_letter`) REFERENCES `seat` (`aircraft_id`, `class_type`, `row_num`, `column_letter`),
-  CONSTRAINT `seats_in_flights_chk_1` CHECK ((`seat_status` in (_utf8mb4'Available',_utf8mb4'Occupied')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+LOCK TABLES `seat` WRITE;
+/*!40000 ALTER TABLE `seat` DISABLE KEYS */;
+/*!40000 ALTER TABLE `seat` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `selected_seats_in_booking`
@@ -323,6 +453,15 @@ CREATE TABLE `selected_seats_in_booking` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `selected_seats_in_booking`
+--
+
+LOCK TABLES `selected_seats_in_booking` WRITE;
+/*!40000 ALTER TABLE `selected_seats_in_booking` DISABLE KEYS */;
+/*!40000 ALTER TABLE `selected_seats_in_booking` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `unregistered_customer`
 --
 
@@ -335,6 +474,15 @@ CREATE TABLE `unregistered_customer` (
   CONSTRAINT `unregistered_customer_ibfk_1` FOREIGN KEY (`email`) REFERENCES `customer` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `unregistered_customer`
+--
+
+LOCK TABLES `unregistered_customer` WRITE;
+/*!40000 ALTER TABLE `unregistered_customer` DISABLE KEYS */;
+/*!40000 ALTER TABLE `unregistered_customer` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -345,4 +493,4 @@ CREATE TABLE `unregistered_customer` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-22 18:04:00
+-- Dump completed on 2025-12-27 12:57:18
