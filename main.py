@@ -21,8 +21,9 @@ def invalid_route(e):
     return redirect("/")
 
 @app.route('/')
-def homepage():
+def homepage():## נעשה ניתובים לדף הבית הרלוונטי לפי סשנים
     return render_template('homepage.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -51,7 +52,7 @@ def login():
         )
 
     else:
-        return redirect('/homepage')
+        return redirect('/')
 
 
 
@@ -72,11 +73,11 @@ def signup():
 
     if customer_exists(email):
         turn_into_registered_db(email,first_name,last_name,passport_number,birth_date,date.today(),password)
-        return redirect('/homepage')
+        return redirect('/')
 
     else:
         add_customer_to_db(email,first_name,last_name,passport_number,birth_date,date.today(),password)
-        return redirect('/homepage')
+        return redirect('/')
 
 @app.route('/adminlogin', methods=['GET', 'POST'])
 def adminlogin():
@@ -93,8 +94,9 @@ def adminlogin():
         return render_template('adminlogin.html' , error="Incorrect Passsword")
 
     else:
-        return redirect('/homepage')
+        return redirect('/')
 
+##נעביר להומפייג את כל הממשק של סרצ פלייטס
 @app.route('/search_flights', methods=['GET', 'POST'])
 def search_flights():
     if request.method == 'GET':
@@ -110,6 +112,8 @@ def search_flights():
                                destinations=get_flights_destinations(), error='No available flights. Please select differently')
     return render_template('show_flights.html', flights= result)
 
+
+##הולך להיות שואו פלייטס שמראה את כל הטיסות הרלוונטיות
 @app.route('/select_flight', methods=['POST'])
 def select_flight():
     flight_id = request.form.get('flight_id')
@@ -123,6 +127,98 @@ def select_flight():
         pass
 
 
+@app.route('/select_seats_economy')
+def select_seats_economy():
+    # בחירת מושבים למחלקת תיירים [cite: 84, 88]
+    pass
+
+
+@app.route('/select_seats_business')
+def select_seats_business():
+    # בחירת מושבים למחלקת עסקים [cite: 85, 99]
+    pass
+
+@app.route('/passenger_details')
+def passenger_details():
+    # להוסיף / מתמלא אוטומטית פרטי הנוסעים
+    #להוסיף לפה אם הגענו בפוסט אז לשים את פרטי ההזמנה הסופיים
+    pass
+
+
+# --- ממשק לקוח / אורח ---
+
+@app.route('/logout')
+def logout():
+    # ניתוב לדף הבית + מחיקת סשן [cite: 69, 73]
+    pass
+
+@app.route('/manage_booking', methods=['GET', 'POST'])
+def manage_booking():
+    # ניהול הזמנה לפי מספר הזמנה ואימייל [cite: 14, 20, 129]
+    pass
+
+@app.route('/booking_history')
+def booking_history():
+    # צפייה בהיסטוריית הזמנות למשתמשים רשומים בלבד [cite: 66, 71, 158]
+    pass
+
+
+
+
+@app.route('/order_summary', methods=['GET', 'POST'])
+def order_summary():
+    # סיכום הזמנה ומילוי פרטי נוסע [cite: 96, 110, 111]
+    pass
+
+@app.route('/confirm_order')
+def confirm_order():
+    # דף אישור סופי לאחר ביצוע הזמנה ועדכון DB [cite: 117, 119]
+    pass
+
+@app.route('/cancel_booking_request', methods=['POST'])
+def cancel_booking_request():
+    # עמוד ביטול הזמנה ובדיקת תנאי 36 שעות [cite: 134, 138]
+    pass
+
+@app.route('/booking_cancelled')
+def booking_cancelled():
+    # הצגת פרטי הזמנה שבוטלה בהצלחה [cite: 151, 152]
+    pass
+
+# --- ממשק מנהל (Admin) ---
+
+@app.route('/admin_homepage')
+def admin_dashboard():
+    # עמוד הבית של המנהל [cite: 168]
+    pass
+
+@app.route('/add_flight_step1', methods=['GET', 'POST'])
+def add_flight_step1():
+    # שלב 1 בהוספת טיסה: בחירת יעד, מקור ותאריך [cite: 187, 192]
+    pass
+
+@app.route('/add_flight_step2', methods=['GET', 'POST'])
+def add_flight_step2():
+    # שלב 2 בהוספת טיסה: בחירת מטוס, צוות ומחירים [cite: 214, 237, 249]
+    pass
+
+@app.route('/flight_added_success')
+def flight_added_success():
+    # דף אישור לאחר הוספת טיסה חדשה [cite: 265, 266]
+    pass
+
+@app.route('/flight_board', methods=['GET', 'POST'])
+def flight_board():
+    # לוח הטיסות למנהל כולל סינונים [cite: 179, 276, 289]
+    pass
+
+@app.route('/admin_cancel_flight', methods=['POST'])
+def admin_cancel_flight():
+    # ביטול טיסה על ידי מנהל ועדכון כל ההזמנות הקשורות [cite: 173, 293, 299]
+    pass
+
+if __name__=="__main__":
+    app.run(debug=True)
 
 if __name__=="__main__":
     app.run(debug=True)
