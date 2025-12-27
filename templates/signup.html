@@ -19,15 +19,22 @@
         <form action="/signup" method="POST">
             <input placeholder="Email" autocomplete="off" type="email" name="email" maxlength="100" required>
             <br><br>
-            <input placeholder="First Name in English" type="text" name="first_name" maxlength="50" required>
+            <input placeholder="First Name in English" type="text" name="first_name" pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required>
             <br><br>
-            <input placeholder="Last Name in English" type="text" name="last_name" maxlength="50" required>
+            <input placeholder="Last Name in English" type="text" name="last_name" pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required>
             <br><br>
             <input placeholder="Passport Number" type="text" name="passport_number" maxlength="20" required>
             <br><br>
-            <input type="date" name="birth_date" required>
+            <input type="date" name="birth_date" max="{{ today }}" required>
             <br><br>
-            <input placeholder="Password" type="password" name="password" maxlength="100" required>
+            <input placeholder="Password" type="password" name="password" minlength="6" maxlength="100" title="Please enter at least 6 chars" required>
+            <br><br>
+            <p>Phone Numbers (Digits only)  :</p>
+            <input placeholder="Phone Number 1 " type="text" name="phones" minlength="9" maxlength="15" pattern="\d+" title="Please enter at least 9 digits" required>
+            <br><br>
+            <input placeholder="Phone Number 2 (Optional)" type="text" name="phones" pattern="\d+"  minlength="9" maxlength="15" title="Please enter at least 9 digits">
+            <br><br>
+            <input placeholder="Phone Number 3 (Optional)" type="text" name="phones" pattern="\d+" minlength="9" maxlength="15" title="Please enter at least 9 digits">
             <br><br>
 
             <input type="submit" value="Sign Up">

@@ -2,47 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Flights</title>
+    <title>Available Flights</title>
 </head>
 <body>
-<form action="/select_flight" method="POST">
+<h2>Available Flights for {{ requested_seats }} Passengers</h2>
+<form action="/select_seats" method="POST">
+    <input type="hidden" name="num_seats" value="{{ requested_seats }}">
 <table border="1" cellpadding="8" cellspacing="0">
     <thead>
         <tr>
             <th>Select</th>
             <th>Flight ID</th>
-            <th>Flight Duration</th>
-            <th>Departure Time</th>
-            <th>Departure Date</th>
-            <th>Origin Airport</th>
-            <th>Destination Airport</th>
-            <th>Aircraft ID</th>
-            <th>Arrival Date</th>
-            <th>Arrival Time</th>
+            <th>Class</th>
+            <th>Departure date (From: {{ flights[0].origin if flights else '' }})</th>
+            <th>Departure time</th>
+            <th>Arrival date (To: {{ flights[0].destination if flights else '' }})</th>
+            <th>Arrival time</th>
+            <th>Price Per Seat</th>
+            <th>Total Price</th>
         </tr>
-    </thead>
-    <tbody>
-        {% for flight in flights %}
-        <tr>
-            <td>
-                <input type="radio" name="flight_id" value="{{ flight[0] }}" required>
-            </td>
-            <td>{{ flight[0] }}</td>
-            <td>{{ flight[1] / 60 }} hours</td>
-            <td>{{ flight[2] }}</td>
-            <td>{{ flight[3] }}</td>
-            <td>{{ flight[4] }}</td>
-            <td>{{ flight[5] }}</td>
-            <td>{{ flight[6] }} </td>
-            <td>{{ flight[7] }} </td>
-            <td>{{ flight[8] }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+</thead>
+            <tbody>
+                {% for flight in flights %}
+                <tr>
+                    <td>
+                        <input type="radio" name="selected_option" value="{{ flight.id }},{{ flight.class_type }}" required>
+                    </td>
+                    <td>{{flight.id}}</td>
+                    <td>{{flight.class_type}}</td>
+                    <td>{{flight.departure_date}}</td>
+                    <td>{{flight.departure_time}}</td>
+                    <td>{{flight.arrival_date}}</td>
+                    <td>{{flight.arrival_time}}</td>
+                    <td>{{flight.price}} USD</td>
+                    <td>${{ flight.price * requested_seats|int }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-<input type="submit" value="Select Flight">
+        <br>
+        <input type="submit" value="Continue to Seat Selection">
+    </form>
 
-</form>
+    <br>
+    <a href="/">Back to Search</a>
 </body>
 </html>

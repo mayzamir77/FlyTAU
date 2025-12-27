@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Passenger Details</title>
+    <style>
+        .summary-box { border: 2px solid #333; padding: 15px; background-color: #f9f9f9; margin-bottom: 20px; }
+        .price-total { font-size: 1.2em; color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Flight Summary & Passenger Details</h2>
+
+    <div class="summary-box">
+        <h3>Flight Information</h3>
+        <p><strong>Flight ID:</strong> {{ session['booking_data']['flight_id'] }}</p>
+        <p><strong>Class:</strong> {{ session['booking_data']['class_type'] }}</p>
+        <p><strong>Seats selected:</strong> {{ seats | join(', ') }}</p>
+        <p><strong>Number of Passengers:</strong> {{ session['booking_data']['num_seats'] }}</p>
+        <hr>
+        <p class="price-total">Total Price: ${{ session['booking_data']['total_price'] }}</p>
+    </div>
+
+    <form action="/review_order" method="POST">
+        <fieldset>
+            <legend><h3>Customer Information</h3></legend>
+
+            <label>First Name (English):</label><br>
+            <input type="text" name="first_name"
+                   value="{{ session.get('user_first_name', '') }}" pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required><br><br>
+
+            <label>Last Name (English):</label><br>
+            <input type="text" name="last_name"
+                   value="{{ session.get('user_last_name', '') }}" pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required><br><br>
+
+            <label>Email Address:</label><br>
+            <input type="email" name="email"
+                   value="{{ session.get('user_email', '') }}"
+                   required><br><br>
+
+            <label>Passport Number:</label><br>
+            <input type="text" name="passport"
+                   value="{{ session.get('user_passport', '') }}"
+                   maxlength="20" required><br><br>
+
+            <label>Date of Birth:</label><br>
+            <input type="date" name="birth_date"
+                   value="{{ session.get('user_birth_date', '') }}"
+                   max="{{ today }}" required>
+        </fieldset>
+
+        <br>
+        <input type="submit" value="Confirm & Complete Reservation">
+    </form>
+
+    <br>
+    <a href="/">Cancel and Back to Search</a>
+</body>
+</html>
