@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seat Selection</title>
+    <style>
+        .occupied { color: red; font-weight: bold; padding: 10px; border: 1px solid #ccc; background: #f0f0f0; }
+        .available { color: green; padding: 10px; border: 1px solid #333; }
+        .error { color: white; background-color: red; padding: 10px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Seat Selection for {{ flight_id }} ({{ class_type }})</h2>
+    <h3>Please select exactly {{ num_seats }} seats.</h3>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form action="/validate_seats" method="POST">
+
+        <table border="1" cellpadding="10">
+            {% for r in range(layout[2],  layout[2]+layout[0]) %}
+            <tr>
+                {% for c_idx in range(layout[1]) %}
+                    {% set col_letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[c_idx] %}
+                    <td>
+                        {% if (r, col_letter) in vacant_set %}
+                            <div class="available">
+                                <label for="seat_{{r}}_{{col_letter}}">{{ r }}{{ col_letter }}</label><br>
+                                <input type="checkbox" name="selected_seats" value="{{ r }}{{ col_letter }}" id="seat_{{r}}_{{col_letter}}">
+                            </div>
+                        {% else %}
+                            <div class="occupied">
+                                {{ r }}{{ col_letter }}<br>X
+                            </div>
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <br>
+        <input type="submit" value="Continue to Passenger Details">
+    </form>
+</body>
+</html>
