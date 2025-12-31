@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Booking</title>
+</head>
+<body>
+
+<h2>Manage Booking</h2>
+
+{% if error %}
+  <p style="color:red;">{{ error }}</p>
+{% endif %}
+
+{% if booking %}
+  <h3>Booking Details</h3>
+  <p><strong>Booking ID:</strong> {{ booking.booking_id }}</p>
+  <p><strong>Email:</strong> {{ booking.customer_email }}</p>
+  <p><strong>Flight ID:</strong> {{ booking.flight_id }}</p>
+  <p><strong>From:</strong> {{ booking.origin }}</p>
+  <p><strong>To:</strong> {{ booking.destination }}</p>
+  <p><strong>Departure Time:</strong> {{ booking.departure_date }} {{ booking.departure_time }}</p>
+  <p><strong>Arrival Time:</strong> {{ booking.arrival_date }} {{ booking.arrival_time }}</p>
+  <p><strong>Payment:</strong> {{ booking.payment }} USD</p>
+{% else %}
+  <p>No booking to show yet.</p>
+{% endif %}
+
+<hr>
+
+<h3>Cancel Booking</h3>
+
+{% if can_cancel %}
+    <p>
+        Cancellation fee: {{ cancellation_fee }} USD
+    </p>
+
+    <form method="POST"
+          action="/cancel_booking_request"
+          onsubmit="return confirm('Are you sure you want to cancel this booking? A cancellation fee of {{ cancellation_fee }} will be charged.');">   <!--JS-->
+
+        <input type="hidden" name="booking_id" value="{{ booking.booking_id }}">
+        <input type="hidden" name="booking_email" value="{{ booking.customer_email }}">
+
+        <button type="submit">Cancel Booking</button>
+    </form>
+{% else %}
+    <p>
+        This booking cannot be cancelled less than 36 hours before departure.
+    </p>
+
+    <button type="button" disabled>
+        Cancel Booking
+    </button>
+{% endif %}
+
+<a href="{{ back_url }}">Back</a>
+
+</body>
+</html>

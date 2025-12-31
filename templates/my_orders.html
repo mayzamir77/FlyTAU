@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Orders</title>
+</head>
+<body>
+
+<h2>My Orders</h2>
+
+<form method="GET" action="/my_orders">
+    <label for="status">Filter by booking status:</label>
+
+<select name="status">
+    <option value="" {% if not selected_status %}selected{% endif %}>All</option>
+
+    <option value="Active"
+        {% if selected_status == 'Active' %}selected{% endif %}>
+        Active
+    </option>
+
+    <option value="Completed"
+        {% if selected_status == 'Completed' %}selected{% endif %}>
+        Completed
+    </option>
+
+    <option value="Customer Cancellation"
+        {% if selected_status == 'Customer Cancellation' %}selected{% endif %}>
+        Customer Cancellation
+    </option>
+
+    <option value="System Cancellation"
+        {% if selected_status == 'System Cancellation' %}selected{% endif %}>
+        System Cancellation
+    </option>
+</select>
+
+
+    <button type="submit">Filter</button>
+</form>
+
+<br><br>
+
+{% if orders %}
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Booking ID</th>
+        <th>Flight ID</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Departure</th>
+        <th>Arrival</th>
+        <th>Status</th>
+        <th>Payment</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for order in orders %}
+    <tr>
+        <td>{{ order.booking_id }}</td>
+        <td>{{ order.flight_id }}</td>
+        <td>{{ order.origin }}</td>
+        <td>{{ order.destination }}</td>
+        <td>{{ order.departure_date }} {{ order.departure_time }}</td>
+        <td>{{ order.arrival_date }} {{ order.arrival_time }}</td>
+        <td>{{ order.booking_status }}</td>
+        <td>{{ order.payment }} USD</td>
+
+        <td>
+        {% if order.booking_status == 'Active' %}
+            <form method="POST" action="/manage_booking">
+                <input type="hidden" name="booking_ID" value="{{ order.booking_id }}">
+                <button type="submit">Manage</button>
+            </form>
+        {% else %}
+            —
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+</table>
+{% else %}
+<p>No orders to display.</p>
+{% endif %}
+
+<br>
+<a href="/">Back to Home Page</a>
+
+</body>
+</html>

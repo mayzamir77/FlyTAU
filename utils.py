@@ -1,5 +1,10 @@
 import mysql.connector
 from contextlib import contextmanager
+from datetime import datetime, date, time, timedelta
+from decimal import Decimal
+
+
+print("utils loaded")
 
 @contextmanager
 def db_cur():
@@ -25,7 +30,7 @@ def db_cur():
         if mydb:
             mydb.close()
 
-class FlightResult:
+class FlightResult:     #flight info
     def __init__(self, data_tuple):
         self.id = data_tuple[0]
         self.departure_time = data_tuple[1]
@@ -205,9 +210,74 @@ def get_class_layout(flight_id, class_type):
         cursor.execute(query, (flight_id, class_type, flight_id, class_type))
         return cursor.fetchone()
 
+##manage bookings func - rona
+
+def get_booking_details(booking_id, email):
+    with db_cur() as cursor:
+        query = """
+        SELECT b.booking_id, b.customer_email, b.payment, b.booking_status,
+            f.flight_id, f.departure_date, f.departure_time, 
+            r.origin_airport, r.destination_airport, r.flight_duration_mins,
+            DATE(ADDTIME(TIMESTAMP(f.departure_date, f.departure_time),SEC_TO_TIME(r.flight_duration_mins * 60))) AS arrival_date,
+            TIME(ADDTIME(TIMESTAMP(f.departure_date, f.departure_time),SEC_TO_TIME(r.flight_duration_mins * 60))) AS arrival_time
+        FROM booking b JOIN flight f
+        ON b.flight_id = f.flight_id
+        JOIN routes r
+        ON f.origin_airport = r.origin_airport AND f.destination_airport = r.destination_airport
+        WHERE b.booking_id = %s AND b.customer_email = %s
+        """
+        cursor.execute(query, (booking_id, email))
+        row=cursor.fetchone()
+
+        if not row:
+            return None
+
+        return BookingResult(row)
+
+class BookingResult:    #saves the info about a booking, row indicates a row in the results table
+    def __init__(self, row):
+        self.booking_id = row[0]
+        self.customer_email = row[1]
+        self.payment = row[2]
+        self.booking_status=row[3]
+
+        self.flight_id = row[4]
+        self.departure_date = row[5]
+        self.departure_time = row[6]
+
+        self.origin = row[7]
+        self.destination = row[8]
+        self.flight_duration_mins = row[9]
+
+        self.arrival_date = row[10]
+        self.arrival_time = row[11]
+
+def hours_until_flight(departure_date, departure_time):  #checks time until flight
+
+    flight_datetime = datetime(
+        year=departure_date.year,
+        month=departure_date.month,
+        day=departure_date.day
+    )
+
+    if isinstance(departure_time, timedelta):     #if mysql brings the time as timedelta
+        flight_datetime = flight_datetime + departure_time
+    else:
+        flight_datetime = flight_datetime.replace(
+            hour=departure_time.hour,
+            minute=departure_time.minute,
+            second=departure_time.second
+        )
+
+    now = datetime.now()
+    delta = flight_datetime - now
+    return delta.total_seconds() / 3600      #the final time calculation
 
 
-def add_booking_to_db(email,first_name,last_name,flight_id,booking_date,booking_status,payment,aircraft_id,class_type,seats,phones):
+def can_cancel_booking(departure_date, departure_time):   #checks if can cancel based on time until flight
+    return hours_until_flight(departure_date, departure_time) > 36   #returns T/F
+
+  def add_booking_to_db(email,first_name,last_name,flight_id,booking_date,booking_status,payment,aircraft_id,class_type,seats,phones):
     with db_cur() as cursor:
         if not registered_customer_exists(email):
             cursor.execute("""
@@ -233,5 +303,45 @@ def add_booking_to_db(email,first_name,last_name,flight_id,booking_date,booking_
 
         return new_booking_id
 
+def calculate_cancellation_fee(payment):   #checks how much the cancellation fee
+    return (payment * Decimal('0.05')).quantize(Decimal('0.01'))
 
+def cancel_booking_in_db(booking_id):   #changing the booking status in db to customer-cancelled
+    with db_cur() as cursor:
+        cursor.execute(
+            """
+            UPDATE booking
+            SET booking_status = 'Customer Cancellation'
+            WHERE booking_id = %s
+            """,
+            (booking_id,)
+        )
 
+def get_all_bookings_for_customer(email):
+    with db_cur() as cursor:
+        query = """
+        SELECT 
+            b.booking_id,
+            b.customer_email,
+            b.payment,
+            b.booking_status,
+            f.flight_id,
+            f.departure_date,
+            f.departure_time,
+            r.origin_airport,
+            r.destination_airport,
+            r.flight_duration_mins,
+            DATE(ADDTIME(TIMESTAMP(f.departure_date, f.departure_time), SEC_TO_TIME(r.flight_duration_mins * 60))) AS arrival_date,
+            TIME(ADDTIME(TIMESTAMP(f.departure_date, f.departure_time), SEC_TO_TIME(r.flight_duration_mins * 60))) AS arrival_time
+        FROM booking b
+        JOIN flight f ON b.flight_id = f.flight_id
+        JOIN routes r 
+          ON f.origin_airport = r.origin_airport 
+         AND f.destination_airport = r.destination_airport
+        WHERE b.customer_email = %s
+        ORDER BY f.departure_date DESC, f.departure_time DESC
+        """
+        cursor.execute(query, (email,))
+        rows = cursor.fetchall()
+
+        return [BookingResult(row) for row in rows]
