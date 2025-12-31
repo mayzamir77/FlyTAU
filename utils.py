@@ -45,9 +45,9 @@ class FlightResult:     #flight info
         self.destination=data_tuple[10]
 
 ##login checks
-def customer_exists(email):
+def guest_customer_exists(email):
     with db_cur() as cursor:
-        cursor.execute("SELECT 1 FROM Customer WHERE email = %s", (email,))
+        cursor.execute("SELECT 1 FROM guest_customer WHERE email = %s", (email,))
         result = cursor.fetchone()
         return result is not None
 
@@ -65,27 +65,49 @@ def check_password_customer(email, password):
 
 def get_customer_details(email):
     with db_cur() as cursor:
-        cursor.execute("SELECT first_name_english, last_name_english,passport_number,birth_date FROM Customer as c join registered_customer as rc on c.email=rc.email WHERE c.email = %s", (email,))
-        result = cursor.fetchone()
-        if result:
-            return result
+        cursor.execute("""
+            SELECT first_name_english, last_name_english, passport_number, birth_date 
+            FROM registered_customer WHERE email = %s
+        """, (email,))
+        res = cursor.fetchone()
+        if res:
+            return {
+                'first_name': res[0],
+                'last_name': res[1],
+                'passport': res[2],
+                'birth_date': res[3]
+            }
+        return None
+
+def get_customer_phones(email):
+    with db_cur() as cursor:
+        cursor.execute("SELECT phone_number FROM registered_customer_phones WHERE email = %s", (email,))
+        result = [row[0] for row in cursor.fetchall()]
+        return result
+
 
 ##signup func
-def turn_into_registered_db(email,first_name,last_name,passport_number,birth_date,registration_date,password, phones):
+def turn_into_registered_db(email, first_name, last_name, passport_number, birth_date, registration_date, password, new_phones):
     with db_cur() as cursor:
-        cursor.execute("UPDATE Customer SET first_name_english = %s, last_name_english = %s WHERE email = %s",(first_name, last_name, email))
-        cursor.execute("DELETE FROM Unregistered_Customer WHERE email= %s",(email,))
-        cursor.execute("INSERT INTO Registered_Customer VALUES (%s,%s,%s,%s,%s)", (email,passport_number,birth_date,registration_date,password))
-        for p in phones:
-            cursor.execute("INSERT IGNORE INTO customer_phone_numbers VALUES(%s,%s)",(email,p))
+        cursor.execute("SELECT phone_number FROM guest_customer_phones WHERE email = %s", (email,))
+        old_phones = [row[0] for row in cursor.fetchall()]
+        all_phones = list(set(old_phones + new_phones))
+        cursor.execute("DELETE FROM guest_customer_phones WHERE email = %s", (email,))
+        cursor.execute("DELETE FROM guest_customer WHERE email = %s", (email,))
+        cursor.execute("""
+            INSERT INTO registered_customer 
+            (email, first_name_english, last_name_english, passport_number, birth_date, registration_date, customer_password)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (email, first_name, last_name, passport_number, birth_date, registration_date, password))
+        for p in all_phones:
+            cursor.execute("INSERT INTO registered_customer_phones (email, phone_number) VALUES(%s, %s)", (email, p))
 
 def add_customer_to_db(email,first_name,last_name,passport_number,birth_date,registration_date,password, phones):
     with db_cur() as cursor:
-        cursor.execute("INSERT INTO Customer VALUES (%s,%s,%s)", (email,first_name,last_name))
-        cursor.execute("INSERT INTO Registered_Customer VALUES (%s,%s,%s,%s,%s)",
-                       (email, passport_number, birth_date, registration_date, password))
+        cursor.execute("INSERT INTO Registered_Customer VALUES (%s,%s,%s,%s,%s,%s,%s)",
+                       (email, first_name, last_name, passport_number, birth_date, registration_date, password))
         for p in phones:
-            cursor.execute("INSERT INTO customer_phone_numbers VALUES(%s,%s)",(email,p))
+            cursor.execute("INSERT INTO registered_customer_phones VALUES(%s,%s)",(email,p))
 
 
 def admin_exists(id):
@@ -175,8 +197,6 @@ def get_price_for_class(flight_id, class_type):
         return 0
 
 
-
-
 def get_class_layout(flight_id, class_type):
     with db_cur() as cursor:
         query = """
@@ -256,6 +276,32 @@ def hours_until_flight(departure_date, departure_time):  #checks time until flig
 
 def can_cancel_booking(departure_date, departure_time):   #checks if can cancel based on time until flight
     return hours_until_flight(departure_date, departure_time) > 36   #returns T/F
+
+  def add_booking_to_db(email,first_name,last_name,flight_id,booking_date,booking_status,payment,aircraft_id,class_type,seats,phones):
+    with db_cur() as cursor:
+        if not registered_customer_exists(email):
+            cursor.execute("""
+                        INSERT INTO guest_customer (email, first_name_english, last_name_english) 
+                        VALUES (%s, %s, %s)
+                        ON DUPLICATE KEY UPDATE 
+                            first_name_english = VALUES(first_name_english),
+                            last_name_english = VALUES(last_name_english)
+                    """, (email, first_name, last_name))
+            for p in phones:
+                cursor.execute("INSERT IGNORE INTO guest_customer_phones VALUES (%s, %s)", (email, p))
+
+        cursor.execute("INSERT INTO booking (customer_email, flight_id, booking_date, booking_status, payment) VALUES (%s,%s,%s,%s,%s)",
+                       (email,flight_id,booking_date,booking_status,payment))
+        new_booking_id = cursor.lastrowid
+        for seat in seats:
+            row = ''.join(filter(str.isdigit, seat))
+            col = ''.join(filter(str.isalpha, seat))
+            cursor.execute("""
+                            INSERT INTO selected_seats_in_booking (booking_id, aircraft_id, class_type, row_num, column_letter)
+                            VALUES (%s, %s, %s, %s, %s)
+                        """, (new_booking_id, aircraft_id, class_type, row, col))
+
+        return new_booking_id
 
 def calculate_cancellation_fee(payment):   #checks how much the cancellation fee
     return (payment * Decimal('0.05')).quantize(Decimal('0.01'))

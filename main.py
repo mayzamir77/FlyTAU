@@ -18,6 +18,15 @@ app.config.update(
 )
 Session(app)
 
+def login_user(email, details, phones):
+    session['user_email'] = email
+    session['user_type'] = 'customer'
+    session['user_first_name'] = details['first_name']
+    session['user_last_name'] = details['last_name']
+    session['user_passport'] = details['passport']
+    session['user_birth_date'] = str(details['birth_date'])
+    session['user_phones'] = phones
+
 @app.errorhandler(404)
 def invalid_route(e):
     return redirect("/")
@@ -46,32 +55,17 @@ def login():
     email = request.form.get('email')
     password = request.form.get('password')
 
-    if not customer_exists(email):
-        return render_template(
-            'login.html',
-            error="User not found. Please register or place an order as a guest."
-        )
-
-    if not registered_customer_exists(email):
-        return render_template(
-            'login.html',
-            error="This email belongs to a guest. Please register to log in."
-        )
-
-    if not check_password_customer(email, password):
-        return render_template(
-            'login.html',
-            error="Incorrect password.", email=email
-        )
+    if not registered_customer_exists(email) or not check_password_customer(email, password):
+        return render_template('login.html', error="Invalid email or password, email=email")
 
     else:
-        session['user_email'] = email
-        session['user_type'] = 'customer'
-        session['user_first_name'] = get_customer_details(email)[0]
-        session['user_last_name'] = get_customer_details(email)[1]
-        session['user_passport'] = get_customer_details(email)[2]
-        session['user_birth_date'] = get_customer_details(email)[3]
-        return redirect('/')
+        details = get_customer_details(email)
+        phones = get_customer_phones(email)
+        if details:
+            login_user(email, details, phones)
+            return redirect(session.pop('next_url', '/'))
+
+    return render_template('login.html', error="An error occurred while logging in.")
 
 @app.route('/logout')
 def logout():
@@ -81,8 +75,7 @@ def logout():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'GET':
-        today_str = date.today().isoformat()
-        return render_template('signup.html',today=today_str)
+        return render_template('signup.html',today=date.today().isoformat())
 
     email = request.form.get('email')
     passport_number=request.form.get('passport_number')
@@ -97,48 +90,47 @@ def signup():
     if registered_customer_exists(email):
         return render_template('signup.html', error="This email is taken",today=date.today().isoformat())
 
-    if customer_exists(email):
+    if guest_customer_exists(email):
         turn_into_registered_db(email,first_name,last_name,passport_number,birth_date,date.today(),password,phones)
-        session['user_email'] = email
-        session['user_type'] = 'customer'
-        session['user_first_name'] = get_customer_details(email)[0]
-        session['user_last_name'] = get_customer_details(email)[1]
-        session['user_passport'] = get_customer_details(email)[2]
-        session['user_birth_date'] = get_customer_details(email)[3]
-        return redirect('/')
 
     else:
         add_customer_to_db(email,first_name,last_name,passport_number,birth_date,date.today(),password, phones)
-        session['user_email'] = email
-        session['user_type'] = 'customer'
-        session['user_first_name'] = get_customer_details(email)[0]
-        session['user_last_name'] = get_customer_details(email)[1]
-        session['user_passport'] = get_customer_details(email)[2]
-        session['user_birth_date'] = get_customer_details(email)[3]
-        return redirect('/')
+
+    details = {
+        'first_name': first_name,
+        'last_name': last_name,
+        'passport': passport_number,
+        'birth_date': birth_date
+    }
+    login_user(email, details, phones)
+
+    return redirect('/')
 
 
 
 @app.route('/search_flights', methods=['POST'])
 def search_flights():
+
     flight_date= request.form.get('flight_date')
     origin = request.form.get('origin')
     destination=request.form.get('destination')
-    num_seats = request.form.get('num_seats')
+    num_seats = int(request.form.get('num_seats'))
 
     result = get_relevant_flights(flight_date,origin, destination, num_seats)
     if not result:
         return render_template('homepage.html', origins=get_flights_origins(),
-                               destinations=get_flights_destinations(),today=date.today().isoformat(), error='No available flights. Please select differently')
+                               destinations=get_flights_destinations(),today=date.today().isoformat(), error='No available flights found for the selected criteria.')
     return render_template('show_flights.html', flights=result, requested_seats=num_seats)
 
 
 
 @app.route('/select_seats', methods=['POST'])
 def select_seats():
+
     selected_data = request.form.get('selected_option')
     num_seats = int(request.form.get('num_seats'))
-    flight_id, class_type = selected_data.split(',')
+
+    flight_id, class_type, aircraft_id = selected_data.split(',')
     price_per_seat = get_price_for_class(flight_id, class_type)
 
     session['booking_data'] = {
@@ -146,7 +138,8 @@ def select_seats():
         'class_type': class_type,
         'num_seats': num_seats,
         'price_per_seat': price_per_seat,
-        'total_price': price_per_seat * num_seats
+        'total_price': price_per_seat * num_seats,
+        'aircraft_id':aircraft_id
     }
 
     class_info = get_class_layout(flight_id, class_type)
@@ -183,6 +176,17 @@ def review_order():
     if not booking:
         return redirect('/')
 
+    email = request.form.get('email')
+    if registered_customer_exists(email) and session.get('user_email') != email:
+        session['next_url'] = '/passenger_details_after_login'
+        return render_template('passenger_details.html',
+                               seats=booking.get('selected_seats'),
+                               error=f"the email {email} is already registered.")
+
+    raw_phones = request.form.getlist('phones')
+    phones = [p for p in raw_phones if p.strip()]
+
+    booking['phones'] = phones
     booking['first_name'] = request.form.get('first_name')
     booking['last_name'] = request.form.get('last_name')
     booking['email'] = request.form.get('email')
@@ -193,9 +197,47 @@ def review_order():
 
     return render_template('order_summary.html', data=booking)
 
+@app.route('/edit_passenger_details')
+def edit_passenger_details():
+    booking = session.get('booking_data')
+    if not booking:
+        return redirect('/')
+    return render_template("passenger_details.html",
+                           seats=booking.get('selected_seats'),
+                           today=date.today().isoformat())
+
+
+@app.route('/passenger_details_after_login')
+def passenger_details_after_login():
+    booking = session.get('booking_data')
+    if not booking:
+        return redirect('/')
+
+    return render_template("passenger_details.html",
+                           seats=booking.get('selected_seats'),
+                           today=date.today().isoformat())
+
 @app.route('/confirm_booking', methods=['POST'])
 def confirm_booking():
-    pass
+    booking = session.get('booking_data')
+    if not booking:
+        return redirect('/')
+    email = booking['email']
+    first_name=booking['first_name']
+    last_name=booking['last_name']
+    flight_id=booking['flight_id']
+    booking_date=date.today()
+    booking_status='Active'
+    payment=booking['total_price']
+    aircraft_id=booking['aircraft_id']
+    class_type=booking['class_type']
+    seats=booking['selected_seats']
+    phones=booking['phones']
+
+    order_id=add_booking_to_db(email,first_name,last_name,flight_id,booking_date,booking_status,payment,aircraft_id,class_type,seats,phones)
+    session.pop('booking_data', None)
+    return render_template('booking_success.html', order_id=order_id)
+
 
 
 # --- ממשק לקוח / אורח --- רונה
