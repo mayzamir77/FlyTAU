@@ -4,6 +4,8 @@ from flask_session import Session
 from datetime import timedelta, date
 from utils import *
 
+print("main started")
+
 app = Flask(__name__)
 
 app.config.update(
@@ -196,29 +198,122 @@ def confirm_booking():
     pass
 
 
-# --- ממשק לקוח / אורח ---
+# --- ממשק לקוח / אורח --- רונה
 
-
-@app.route('/manage_booking', methods=['GET', 'POST'])
+@app.route('/manage_booking', methods=['GET', 'POST'])   #when customer searches booking in homepage
 def manage_booking():
-    # ניהול הזמנה לפי מספר הזמנה ואימייל [cite: 14, 20, 129]
-    pass
 
-@app.route('/booking_history')
-def booking_history():
-    # צפייה בהיסטוריית הזמנות למשתמשים רשומים בלבד [cite: 66, 71, 158]
-    pass
+    if request.method == 'GET':     #when the form wasnt filled
+        return redirect('/')    #go to homepage
+
+    booking_id = int(request.form.get('booking_ID'))  #getting the fields the customer filled
+
+    if session.get('user_type') == 'customer':   #if customer in session
+        email = session.get('user_email')
+
+    else:
+        email = request.form.get('booking_email')    #customer not in session
+
+    booking = get_booking_details(booking_id, email)    #getting all the booking details from db
+
+    if not booking:  #if booking doesnt exist
+        origins = get_flights_origins()
+        destinations = get_flights_destinations()
+        today_str = date.today().isoformat()
+
+        if session.get('user_type') == 'customer':   #if registered customer
+            return render_template(
+                'customer_homepage.html',
+                name=session.get('user_first_name'),
+                origins=origins,
+                destinations=destinations,
+                today=today_str,
+                manage_booking_error="Booking doesn't exist. Please check details."
+            )
+
+        return render_template(                #if not registered customer
+            'homepage.html',
+            origins=origins,
+            destinations=destinations,
+            today=today_str,
+            manage_booking_error="Booking doesn't exist. Please check details."
+        )
+
+    if booking.booking_status != 'Active':
+        origins = get_flights_origins()
+        destinations = get_flights_destinations()
+        today_str = date.today().isoformat()
+
+        error_msg = "This booking is no longer active and cannot be managed."
+
+        if session.get('user_type') == 'customer':
+            return render_template(
+                'customer_homepage.html',
+                name=session.get('user_first_name'),
+                origins=origins,
+                destinations=destinations,
+                today=today_str,
+                manage_booking_error=error_msg
+            )
+
+        return render_template(
+            'homepage.html',
+            origins=origins,
+            destinations=destinations,
+            today=today_str,
+            manage_booking_error=error_msg
+        )
+
+    departure_date = booking.departure_date
+    departure_time = booking.departure_time
+    payment = booking.payment
+    can_cancel = can_cancel_booking(departure_date, departure_time)
+    cancellation_fee = calculate_cancellation_fee(payment)
+
+    return render_template('manage_booking.html',booking=booking, can_cancel=can_cancel, cancellation_fee=cancellation_fee, back_url=request.referrer)  #if booking exists
 
 
-@app.route('/cancel_booking_request', methods=['POST'])
+@app.route('/cancel_booking_request', methods=['GET', 'POST'])
 def cancel_booking_request():
-    # עמוד ביטול הזמנה ובדיקת תנאי 36 שעות [cite: 134, 138]
-    pass
 
-@app.route('/booking_cancelled')
-def booking_cancelled():
-    # הצגת פרטי הזמנה שבוטלה בהצלחה [cite: 151, 152]
-    pass
+    if request.method == 'GET':     #when the form wasnt filled
+        return redirect('/')    #go to homepage
+
+    booking_id = int(request.form.get('booking_id'))
+
+    if session.get('user_type') == 'customer':
+        email = session.get('user_email')
+    else:
+        email = request.form.get('booking_email')
+
+    booking = get_booking_details(booking_id, email)
+    payment = booking.payment
+
+    cancellation_fee = calculate_cancellation_fee(payment)
+
+    cancel_booking_in_db(booking_id)
+
+    return render_template(
+        'booking_cancelled.html',
+        booking_id=booking_id,
+        cancellation_fee=cancellation_fee
+    )
+
+
+@app.route('/my_orders')   #show all bookings for customer. no post/get because this is with a link.
+def my_orders():
+    if session.get('user_type') != 'customer':
+        return redirect('/login')
+
+    email = session.get('user_email')
+    status = request.args.get('status')  # מה-select
+
+    orders = get_all_bookings_for_customer(email)
+
+    if status:
+        orders = [o for o in orders if o.booking_status == status]
+
+    return render_template('my_orders.html', orders=orders, selected_status=status)
 
 # --- ממשק מנהל (Admin) ---
 
@@ -272,5 +367,3 @@ def admin_cancel_flight():
 if __name__=="__main__":
     app.run(debug=True)
 
-if __name__=="__main__":
-    app.run(debug=True)

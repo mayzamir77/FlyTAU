@@ -44,5 +44,20 @@
 
         <input type="submit" value="Search Flights">
     </form>
+
+<hr>
+{% if manage_booking_error %}
+    <p style="color:red;">{{ manage_booking_error }}</p>
+{% endif %}
+
+    <h3>Manage my Booking</h3>
+    <form action="/manage_booking" method="POST">
+
+        <input placeholder="Booking ID" autocomplete="off" type="text" name="booking_ID" required>
+        <br><br>
+
+        <input type="submit" value="To my Booking">
+    </form>
+
 </body>
 </html>
