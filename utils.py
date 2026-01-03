@@ -1,8 +1,10 @@
 import mysql.connector
 from contextlib import contextmanager
-from datetime import datetime, date, time, timedelta
+import datetime  # ייבוא המודול כולו
 from decimal import Decimal
 
+# אם את צריכה את date ו-time בנפרד, אפשר להוסיף:
+from datetime import date, time, timedelta
 
 print("utils loaded")
 
@@ -240,7 +242,6 @@ def get_admin_details(id):
         return None, None
 
 
-import datetime
 
 
 # פונקציית עזר לנירמול זמן - מעודכנת לטיפול גמיש יותר
@@ -571,6 +572,248 @@ def check_pilot_continuity_full(pilot_id, origin, destination, flight_date, dep_
     if not check_pilot_continuity_forward(pilot_id, destination, flight_date, dep_time, duration):
         return False
     return True
+def check_attendant_continuity_backward(attendant_id, new_origin, new_date, new_dep_time):
+    new_start = datetime.datetime.combine(new_date, new_dep_time)
+    turnaround = datetime.timedelta(minutes=30)
+    half_day = datetime.timedelta(hours=12)
+
+    with db_cur() as cursor:
+        cursor.execute("""
+            SELECT f.departure_date, f.departure_time, r.flight_duration_mins, f.destination_airport
+            FROM flight f
+            JOIN routes r ON f.origin_airport = r.origin_airport AND f.destination_airport = r.destination_airport
+            JOIN flight_attendants_assignment aa ON aa.flight_id = f.flight_id
+            WHERE aa.attendant_id = %s AND f.departure_date <= %s
+        """, (attendant_id, new_date))
+        flights = cursor.fetchall()
+
+    latest_landing = None
+    latest_dest = None
+
+    for f_date, f_time, duration, f_dest in flights:
+        f_time = normalize_time(f_time)
+        f_start = datetime.datetime.combine(f_date, f_time)
+        f_landing = f_start + datetime.timedelta(minutes=duration)
+
+        if f_landing <= new_start:
+            if latest_landing is None or f_landing > latest_landing:
+                latest_landing = f_landing
+                latest_dest = f_dest
+
+    if latest_landing:
+        required_gap = turnaround if latest_dest == new_origin else half_day
+        if latest_landing + required_gap > new_start:
+            return False
+    return True
+
+def check_attendant_continuity_forward(attendant_id, new_destination, new_date, new_dep_time, duration):
+    new_start = datetime.datetime.combine(new_date, new_dep_time)
+    new_landing = new_start + datetime.timedelta(minutes=duration)
+    turnaround = datetime.timedelta(minutes=30)
+    half_day = datetime.timedelta(hours=12)
+
+    with db_cur() as cursor:
+        cursor.execute("""
+            SELECT f.departure_date, f.departure_time, f.origin_airport
+            FROM flight f
+            JOIN flight_attendants_assignment aa ON aa.flight_id = f.flight_id
+            WHERE aa.attendant_id = %s AND f.departure_date >= %s
+        """, (attendant_id, new_date))
+        flights = cursor.fetchall()
+
+    earliest_next_dep = None
+    next_origin = None
+
+    for f_date, f_time, f_origin in flights:
+        f_time = normalize_time(f_time)
+        f_start = datetime.datetime.combine(f_date, f_time)
+
+        if f_start >= new_landing:
+            if earliest_next_dep is None or f_start < earliest_next_dep:
+                earliest_next_dep = f_start
+                next_origin = f_origin
+
+    if earliest_next_dep:
+        required_gap = turnaround if next_origin == new_destination else half_day
+        if new_landing + required_gap > earliest_next_dep:
+            return False
+    return True
+
+def check_attendant_continuity_full(attendant_id, origin, destination, flight_date, dep_time, duration):
+    if not check_attendant_continuity_backward(attendant_id, origin, flight_date, dep_time):
+        return False
+    if not check_attendant_continuity_forward(attendant_id, destination, flight_date, dep_time, duration):
+        return False
+    return True
+
+def get_available_attendants(flight_date, origin, destination, dep_time):
+    if isinstance(flight_date, str):
+        flight_date = datetime.datetime.strptime(flight_date, "%Y-%m-%d").date()
+
+    dep_time = normalize_time(dep_time)
+
+    with db_cur() as cursor:
+        cursor.execute("""
+            SELECT flight_duration_mins 
+            FROM routes 
+            WHERE origin_airport = %s AND destination_airport = %s
+        """, (origin, destination))
+        row = cursor.fetchone()
+
+    if not row:
+        return []
+
+    flight_duration_mins = row[0]
+
+    with db_cur() as cursor:
+        query = """
+        SELECT a.attendant_id, a.first_name_hebrew, a.last_name_hebrew
+        FROM flight_attendants a
+        WHERE a.attendant_id NOT IN (
+            SELECT aa.attendant_id
+            FROM flight_attendants_assignment aa
+            JOIN flight f ON aa.flight_id = f.flight_id
+            JOIN routes r2 ON f.origin_airport = r2.origin_airport 
+                           AND f.destination_airport = r2.destination_airport
+            WHERE 
+              TIMESTAMP(f.departure_date, f.departure_time) < 
+                TIMESTAMP(%s, %s) + INTERVAL %s MINUTE + INTERVAL 30 MINUTE
+              AND
+              TIMESTAMP(f.departure_date, f.departure_time) + INTERVAL r2.flight_duration_mins MINUTE + INTERVAL 30 MINUTE > 
+                TIMESTAMP(%s, %s)
+        );
+        """
+        cursor.execute(query, (
+            flight_date, dep_time, flight_duration_mins,
+            flight_date, dep_time
+        ))
+        all_potential_attendants = cursor.fetchall()
+
+    available_attendants = []
+    for att_id, fname, lname in all_potential_attendants:
+        if check_attendant_continuity_full(att_id, origin, destination, flight_date, dep_time, flight_duration_mins):
+            available_attendants.append({
+                "attendant_id": att_id,
+                "first_name": fname,
+                "last_name": lname
+            })
+
+    return available_attendants
+
+
+def get_crew_names_by_ids(pilot_ids, attendant_ids):
+    pilot_info = []
+    attendant_info = []
+
+    with db_cur() as cursor:
+        # שליפת שמות טייסים + ה-ID שלהם
+        if pilot_ids:
+            format_strings = ','.join(['%s'] * len(pilot_ids))
+            cursor.execute(
+                f"SELECT pilot_id, first_name_hebrew, last_name_hebrew FROM pilots WHERE pilot_id IN ({format_strings})",
+                tuple(pilot_ids))
+            # יוצר פורמט: "P1 - דני כהן"
+            pilot_info = [f"{row[0]} - {row[1]} {row[2]}" for row in cursor.fetchall()]
+
+        # שליפת שמות דיילים + ה-ID שלהם
+        if attendant_ids:
+            format_strings = ','.join(['%s'] * len(attendant_ids))
+            cursor.execute(
+                f"SELECT attendant_id, first_name_hebrew, last_name_hebrew FROM flight_attendants WHERE attendant_id IN ({format_strings})",
+                tuple(attendant_ids))
+            # יוצר פורמט: "A1 - מיכל אברהם"
+            attendant_info = [f"{row[0]} - {row[1]} {row[2]}" for row in cursor.fetchall()]
+
+    return pilot_info, attendant_info
+
+
+def create_new_flight_complete(f_data, pilot_ids, attendant_ids, prices):
+    """
+    פונקציה שיוצרת טיסה קומפלט:
+    1. רישום הטיסה
+    2. שיבוץ צוות
+    3. עדכון מחירים לכל מחלקה (כדי שיופיע בחיפוש)
+    """
+    try:
+        with db_cur() as cursor:
+            # שלב 1: הכנסת הטיסה לטבלת flight
+            # סטטוס ברירת מחדל הוא 'Active'
+            cursor.execute("""
+                INSERT INTO flight (
+                    flight_status, 
+                    departure_time, 
+                    departure_date, 
+                    origin_airport, 
+                    destination_airport, 
+                    aircraft_id
+                ) VALUES ('Active', %s, %s, %s, %s, %s)
+            """, (
+                f_data['departure_time'],
+                f_data['flight_date'],
+                f_data['origin'],
+                f_data['destination'],
+                f_data['aircraft_id']
+            ))
+
+            # קבלת ה-ID האוטומטי של הטיסה שנוצרה הרגע
+            new_flight_id = cursor.lastrowid
+
+            # שלב 2: שיבוץ טייסים
+            for p_id in pilot_ids:
+                cursor.execute("""
+                    INSERT INTO pilots_assignment (flight_id, pilot_id) 
+                    VALUES (%s, %s)
+                """, (new_flight_id, p_id))
+
+            # שלב 3: שיבוץ דיילים
+            for a_id in attendant_ids:
+                cursor.execute("""
+                    INSERT INTO flight_attendants_assignment (flight_id, attendant_id) 
+                    VALUES (%s, %s)
+                """, (new_flight_id, a_id))
+
+            # שלב 4: עדכון מחירים בטבלת classes_in_flight
+            # זה השלב הקריטי שמאפשר לחיפוש למצוא את הטיסה ולדעת מה המחיר שלה
+
+            # אקונומי (תמיד קיים בכל מטוס)
+            cursor.execute("""
+                INSERT INTO classes_in_flight (flight_id, aircraft_id, class_type, seat_price)
+                VALUES (%s, %s, 'economy', %s)
+            """, (new_flight_id, f_data['aircraft_id'], prices['economy']))
+
+            # ביזנס (רק אם זה מטוס Large וקיבלנו מחיר ביזנס)
+            if f_data.get('size') == 'Large' and prices.get('business'):
+                cursor.execute("""
+                    INSERT INTO classes_in_flight (flight_id, aircraft_id, class_type, seat_price)
+                    VALUES (%s, %s, 'business', %s)
+                """, (new_flight_id, f_data['aircraft_id'], prices['business']))
+
+            return True
+
+    except Exception as e:
+        print(f"Error creating complete flight: {e}")
+        # במקרה של שגיאה, המערכת לא תבצע Commit (אם ה-Connection מוגדר כך)
+        return False
+
+def get_crew_names_by_ids(pilot_ids, attendant_ids):
+    pilot_info = []
+    attendant_info = []
+    with db_cur() as cursor:
+        if pilot_ids:
+            format_strings = ','.join(['%s'] * len(pilot_ids))
+            cursor.execute(
+                f"SELECT pilot_id, first_name_hebrew, last_name_hebrew FROM pilots WHERE pilot_id IN ({format_strings})",
+                tuple(pilot_ids))
+            pilot_info = [f"{row[0]} - {row[1]} {row[2]}" for row in cursor.fetchall()]
+
+        if attendant_ids:
+            format_strings = ','.join(['%s'] * len(attendant_ids))
+            cursor.execute(
+                f"SELECT attendant_id, first_name_hebrew, last_name_hebrew FROM flight_attendants WHERE attendant_id IN ({format_strings})",
+                tuple(attendant_ids))
+            attendant_info = [f"{row[0]} - {row[1]} {row[2]}" for row in cursor.fetchall()]
+    return pilot_info, attendant_info
+
 def get_flight_details(flight_id):
     with db_cur() as cursor:
         cursor.execute('''SELECT flight_id, flight_status, departure_time,
@@ -603,6 +846,7 @@ def cancel_booking(flight_id):
                 payment = 0.00 
             WHERE flight_id = %s AND booking_status != 'System Cancellation'
         """, (flight_id,))
+
 def get_booking_details(booking_id, email):
     with db_cur() as cursor:
         query = """
