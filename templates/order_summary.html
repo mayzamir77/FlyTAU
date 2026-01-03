@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Order Summery</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Order Summary{% endblock %}
+
+{% block content %}
+
     <h2>Final Order Summary</h2>
 
     <h3>Your Details</h3>
@@ -23,5 +22,5 @@
 
     <br>
     <a href="/edit_passenger_details">No, go back and edit</a>
-</body>
-</html>
+
+{% endblock %}
