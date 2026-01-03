@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Pilots</title>
+</head>
+<body>
+
+<h2>Flight Details</h2>
+<p><strong>Date:</strong> {{ flight_date }}</p>
+<p><strong>Departure Time:</strong> {{ departure_time }}</p>
+<p><strong>Origin:</strong> {{ origin }}</p>
+<p><strong>Destination:</strong> {{ destination }}</p>
+
+<h2>Selected Aircraft</h2>
+<p><strong>Aircraft ID:</strong> {{ aircraft.aircraft_id }}</p>
+<p><strong>Size:</strong> {{ aircraft.size }}</p>
+<p><strong>Manufacturer:</strong> {{ aircraft.manufacturer }}</p>
+
+<h2>Select Pilots</h2>
+<p>
+    Please select exactly {{ required_pilots }} pilot{{ 's' if required_pilots > 1 else '' }}.
+</p>
+
+<form action="/add_flight_step3" method="POST">
+    <input type="hidden" name="flight_date" value="{{ flight_date }}">
+    <input type="hidden" name="departure_time" value="{{ departure_time }}">
+    <input type="hidden" name="origin" value="{{ origin }}">
+    <input type="hidden" name="destination" value="{{ destination }}">
+    <input type="hidden" name="aircraft_id" value="{{ aircraft.aircraft_id }}">
+    <input type="hidden" name="size" value="{{ aircraft.size }}">
+    <input type="hidden" name="manufacturer" value="{{ aircraft.manufacturer }}">
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Pilot ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Long Flight Certified</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for pilot in pilots %}
+            <tr>
+                <td>
+                    <input type="checkbox" name="selected_pilots" value="{{ pilot.pilot_id }}">
+                </td>
+                <td>{{ pilot.pilot_id }}</td>
+                <td>{{ pilot.first_name }}</td>
+                <td>{{ pilot.last_name }}</td>
+                <td>{{ 'Yes' if pilot.long_flight_certified else 'No' }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    <input type="submit" value="Continue">
+</form>
+
+{% if error %}
+    <p style="color:red;"><strong>{{ error }}</strong></p>
+{% endif %}
+
+<br>
+<a href="/add_flight_step1">Back to Step 1</a>
+
+</body>
+</html>

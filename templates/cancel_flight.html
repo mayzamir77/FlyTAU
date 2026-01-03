@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>Cancel Flight</title>
+</head>
+<body>
+
+<h2>Flight Details</h2>
+
+<table border="1">
+    <tr>
+        <th>Flight Number</th>
+        <th>Flight Status</th>
+        <th>Departure Time</th>
+        <th>Departure Date</th>
+        <th>Origin</th>
+        <th>Destination</th>
+        <th>Aircraft ID</th>
+    </tr>
+    <tr>
+        <td>{{ flight_id }}</td>
+        <td>{{ flight_status }}</td>
+        <td>{{ departure_time }}</td>
+        <td>{{ departure_date }}</td>
+        <td>{{ origin_airport }}</td>
+        <td>{{ destination_airport }}</td>
+        <td>{{ aircraft_id }}</td>
+    </tr>
+</table>
+
+<br>
+
+<form method="post" action="/admin_cancel_flight/confirm">
+    <input type="hidden" name="flight_number" value="{{ flight_id }}">
+
+    {% if cancel_time %}
+        <button type="submit">Cancel Flight</button>
+    {% else %}
+        <button type="button" disabled>Time for cancellation has past</button>
+    {% endif %}
+</form>
+
+</body>
+</html>

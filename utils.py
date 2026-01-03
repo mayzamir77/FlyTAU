@@ -222,6 +222,379 @@ def get_class_layout(flight_id, class_type):
 
 ##manage bookings func - rona
 
+def get_admin_details(id):
+    with db_cur() as cursor:
+        cursor.execute("SELECT first_name_hebrew, last_name_hebrew FROM managers WHERE manager_id = %s", (id,))
+        result = cursor.fetchone()
+        if result:
+            first_name, last_name = result
+            return first_name, last_name
+        return None, None
+
+
+import datetime
+
+
+# פונקציית עזר לנירמול זמן - מעודכנת לטיפול גמיש יותר
+def normalize_time(t):
+    if isinstance(t, datetime.time):
+        return t
+    if isinstance(t, datetime.timedelta):
+        total_seconds = int(t.total_seconds())
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+        return datetime.time(hours % 24, minutes, seconds)
+    if isinstance(t, str):
+        # טיפול במחרוזות (למשל "14:30" או "14:30:00")
+        try:
+            return datetime.datetime.strptime(t[:5], "%H:%M").time()
+        except ValueError:
+            return datetime.datetime.strptime(t, "%H:%M:%S").time()
+    raise TypeError(f"Unsupported time type: {type(t)}")
+
+
+def get_available_aircraft(flight_date, origin, destination, dep_time):
+    if isinstance(flight_date, str):
+        flight_date = datetime.datetime.strptime(flight_date, "%Y-%m-%d").date()
+
+    dep_time = normalize_time(dep_time)
+
+    # שליפת משך הטיסה מהמסלול
+    with db_cur() as cursor:
+        cursor.execute("""
+            SELECT flight_duration_mins 
+            FROM routes 
+            WHERE origin_airport = %s AND destination_airport = %s
+        """, (origin, destination))
+        row = cursor.fetchone()
+
+    if not row:
+        return []  # אין מסלול כזה
+
+    flight_duration_mins = row[0]
+
+    # שאילתה מרכזית - שימוש ב-INTERVAL לצורך דיוק מול MySQL
+    # השאילתה מסננת מטוסים שפיזית חופפים בזמן הטיסה (כולל 30 דקות סבב)
+    with db_cur() as cursor:
+        query = """
+        SELECT a.aircraft_id, a.size, a.manufacturer
+        FROM aircraft a
+        WHERE 
+        (
+            (%s > 180 AND a.size = 'Large')
+            OR 
+            (%s <= 180)
+        )
+        AND a.aircraft_id NOT IN (
+            SELECT f.aircraft_id
+            FROM flight f
+            JOIN routes r2 
+              ON f.origin_airport = r2.origin_airport 
+             AND f.destination_airport = r2.destination_airport
+            WHERE 
+              -- בדיקת חפיפה: הטיסה הקיימת מתחילה לפני שהחדשה נגמרת
+              -- וגם הטיסה הקיימת נגמרת אחרי שהחדשה מתחילה
+              TIMESTAMP(f.departure_date, f.departure_time) < 
+                TIMESTAMP(%s, %s) + INTERVAL %s MINUTE + INTERVAL 30 MINUTE
+              AND
+              TIMESTAMP(f.departure_date, f.departure_time) + INTERVAL r2.flight_duration_mins MINUTE + INTERVAL 30 MINUTE > 
+                TIMESTAMP(%s, %s)
+        );
+        """
+        cursor.execute(query, (
+            flight_duration_mins, flight_duration_mins,
+            flight_date, dep_time, flight_duration_mins,
+            flight_date, dep_time
+        ))
+        all_available_aircraft = cursor.fetchall()
+
+    available_aircraft = []
+    for ac_id, size, manufacturer in all_available_aircraft:
+        if check_aircraft_continuity_full(
+                ac_id, origin, destination, flight_date, dep_time, flight_duration_mins
+        ):
+            available_aircraft.append({
+                "aircraft_id": ac_id,
+                "size": size,
+                "manufacturer": manufacturer
+            })
+
+    return available_aircraft
+
+
+def check_aircraft_continuity_backward(aircraft_id, new_origin, new_date, new_dep_time):
+    if isinstance(new_date, str):
+        new_date = datetime.datetime.strptime(new_date, "%Y-%m-%d").date()
+
+    new_dep_time = normalize_time(new_dep_time)
+    new_start = datetime.datetime.combine(new_date, new_dep_time)
+
+    turnaround = datetime.timedelta(minutes=30)
+    half_day = datetime.timedelta(hours=12)
+
+    with db_cur() as cursor:
+        # אופטימיזציה: שליפת טיסות רק מטווח זמן רלוונטי (יום לפני)
+        cursor.execute("""
+            SELECT f.departure_date, f.departure_time, r.flight_duration_mins, f.destination_airport
+            FROM flight f
+            JOIN routes r ON f.origin_airport = r.origin_airport AND f.destination_airport = r.destination_airport
+            WHERE f.aircraft_id = %s 
+              AND f.departure_date <= %s
+        """, (aircraft_id, new_date))
+        flights = cursor.fetchall()
+
+    latest_landing = None
+    latest_dest = None
+
+    for f_date, f_time, duration, f_dest in flights:
+        f_time = normalize_time(f_time)
+        f_start = datetime.datetime.combine(f_date, f_time)
+        f_landing = f_start + datetime.timedelta(minutes=duration)
+
+        # מחפשים את הטיסה האחרונה שנחתה לפני זמן ההמראה המתוכנן
+        if f_landing <= new_start:
+            if latest_landing is None or f_landing > latest_landing:
+                latest_landing = f_landing
+                latest_dest = f_dest
+
+    if latest_landing:
+        # אם המטוס נחת ביעד אחר, דורשים 12 שעות. אם באותו יעד, רק 30 דקות.
+        required_gap = turnaround if latest_dest == new_origin else half_day
+        if latest_landing + required_gap > new_start:
+            return False
+
+    return True
+
+
+def check_aircraft_continuity_forward(aircraft_id, new_destination, new_date, new_dep_time, new_duration):
+    if isinstance(new_date, str):
+        new_date = datetime.datetime.strptime(new_date, "%Y-%m-%d").date()
+
+    new_dep_time = normalize_time(new_dep_time)
+    new_start = datetime.datetime.combine(new_date, new_dep_time)
+    new_landing = new_start + datetime.timedelta(minutes=new_duration)
+
+    turnaround = datetime.timedelta(minutes=30)
+    half_day = datetime.timedelta(hours=12)
+
+    with db_cur() as cursor:
+        # אופטימיזציה: שליפת טיסות רק מטווח זמן רלוונטי (יום אחרי)
+        cursor.execute("""
+            SELECT f.departure_date, f.departure_time, f.origin_airport
+            FROM flight f
+            WHERE f.aircraft_id = %s 
+              AND f.departure_date >= %s
+        """, (aircraft_id, new_date))
+        flights = cursor.fetchall()
+
+    earliest_next_departure = None
+    next_origin = None
+
+    for f_date, f_time, f_origin in flights:
+        f_time = normalize_time(f_time)
+        f_start = datetime.datetime.combine(f_date, f_time)
+
+        # מחפשים את הטיסה הראשונה שיוצאת אחרי שהטיסה הנוכחית נחתה
+        if f_start >= new_landing:
+            if earliest_next_departure is None or f_start < earliest_next_departure:
+                earliest_next_departure = f_start
+                next_origin = f_origin
+
+    if earliest_next_departure:
+        # אם הטיסה הבאה יוצאת מיעד אחר מזה שנחתנו בו, דורשים 12 שעות
+        required_gap = turnaround if next_origin == new_destination else half_day
+        if new_landing + required_gap > earliest_next_departure:
+            return False
+
+    return True
+
+
+def check_aircraft_continuity_full(aircraft_id, origin, destination, flight_date, dep_time, duration):
+    # בדיקה אחורה - האם המטוס פנוי להמריא מהמוצא
+    if not check_aircraft_continuity_backward(aircraft_id, origin, flight_date, dep_time):
+        return False
+
+    # בדיקה קדימה - האם המטוס יוכל לבצע את טיסותיו הבאות אחרי שינחת ביעד
+    if not check_aircraft_continuity_forward(aircraft_id, destination, flight_date, dep_time, duration):
+        return False
+
+    return True
+
+
+def get_available_pilots(flight_date, origin, destination, dep_time):
+    if isinstance(flight_date, str):
+        flight_date = datetime.datetime.strptime(flight_date, "%Y-%m-%d").date()
+
+    dep_time = normalize_time(dep_time)
+
+    # 1. שליפת משך הטיסה
+    with db_cur() as cursor:
+        cursor.execute("""
+            SELECT flight_duration_mins 
+            FROM routes 
+            WHERE origin_airport = %s AND destination_airport = %s
+        """, (origin, destination))
+        row = cursor.fetchone()
+
+    if not row:
+        return []
+
+    flight_duration_mins = row[0]
+
+    # 2. שאילתה מרכזית לטייסים - סינון לפי הכשרה וחפיפת זמנים
+    with db_cur() as cursor:
+        query = """
+        SELECT p.pilot_id, p.first_name_hebrew, p.last_name_hebrew, p.long_flight_certified
+        FROM pilots p
+        WHERE 
+        (
+            (%s > 180 AND p.long_flight_certified = 1)
+            OR 
+            (%s <= 180)
+        )
+        AND p.pilot_id NOT IN (
+            SELECT pa.pilot_id
+            FROM pilots_assignment pa
+            JOIN flight f ON pa.flight_id = f.flight_id
+            JOIN routes r2 ON f.origin_airport = r2.origin_airport 
+                           AND f.destination_airport = r2.destination_airport
+            WHERE 
+              TIMESTAMP(f.departure_date, f.departure_time) < 
+                TIMESTAMP(%s, %s) + INTERVAL %s MINUTE + INTERVAL 30 MINUTE
+              AND
+              TIMESTAMP(f.departure_date, f.departure_time) + INTERVAL r2.flight_duration_mins MINUTE + INTERVAL 30 MINUTE > 
+                TIMESTAMP(%s, %s)
+        );
+        """
+        cursor.execute(query, (
+            flight_duration_mins, flight_duration_mins,
+            flight_date, dep_time, flight_duration_mins,
+            flight_date, dep_time
+        ))
+        all_potential_pilots = cursor.fetchall()
+
+    available_pilots = []
+    for p_id, fname, lname, long_cert in all_potential_pilots:
+        # בדיקת המשכיות מלאה (אחורה וקדימה)
+        if check_pilot_continuity_full(p_id, origin, destination, flight_date, dep_time, flight_duration_mins):
+            available_pilots.append({
+                "pilot_id": p_id,
+                "first_name": fname,
+                "last_name": lname,
+                "long_flight_certified": long_cert
+            })
+
+    return available_pilots
+
+
+def check_pilot_continuity_backward(pilot_id, new_origin, new_date, new_dep_time):
+    new_start = datetime.datetime.combine(new_date, new_dep_time)
+    turnaround = datetime.timedelta(minutes=30)
+    half_day = datetime.timedelta(hours=12)
+
+    with db_cur() as cursor:
+        cursor.execute("""
+            SELECT f.departure_date, f.departure_time, r.flight_duration_mins, f.destination_airport
+            FROM flight f
+            JOIN routes r ON f.origin_airport = r.origin_airport AND f.destination_airport = r.destination_airport
+            JOIN pilots_assignment pa ON pa.flight_id = f.flight_id
+            WHERE pa.pilot_id = %s AND f.departure_date <= %s
+        """, (pilot_id, new_date))
+        flights = cursor.fetchall()
+
+    latest_landing = None
+    latest_dest = None
+
+    for f_date, f_time, duration, f_dest in flights:
+        f_time = normalize_time(f_time)
+        f_start = datetime.datetime.combine(f_date, f_time)
+        f_landing = f_start + datetime.timedelta(minutes=duration)
+
+        if f_landing <= new_start:
+            if latest_landing is None or f_landing > latest_landing:
+                latest_landing = f_landing
+                latest_dest = f_dest
+
+    if latest_landing:
+        required_gap = turnaround if latest_dest == new_origin else half_day
+        if latest_landing + required_gap > new_start:
+            return False
+    return True
+
+
+def check_pilot_continuity_forward(pilot_id, new_destination, new_date, new_dep_time, duration):
+    new_start = datetime.datetime.combine(new_date, new_dep_time)
+    new_landing = new_start + datetime.timedelta(minutes=duration)
+    turnaround = datetime.timedelta(minutes=30)
+    half_day = datetime.timedelta(hours=12)
+
+    with db_cur() as cursor:
+        cursor.execute("""
+            SELECT f.departure_date, f.departure_time, f.origin_airport
+            FROM flight f
+            JOIN pilots_assignment pa ON pa.flight_id = f.flight_id
+            WHERE pa.pilot_id = %s AND f.departure_date >= %s
+        """, (pilot_id, new_date))
+        flights = cursor.fetchall()
+
+    earliest_next_dep = None
+    next_origin = None
+
+    for f_date, f_time, f_origin in flights:
+        f_time = normalize_time(f_time)
+        f_start = datetime.datetime.combine(f_date, f_time)
+
+        if f_start >= new_landing:
+            if earliest_next_dep is None or f_start < earliest_next_dep:
+                earliest_next_dep = f_start
+                next_origin = f_origin
+
+    if earliest_next_dep:
+        required_gap = turnaround if next_origin == new_destination else half_day
+        if new_landing + required_gap > earliest_next_dep:
+            return False
+    return True
+
+
+def check_pilot_continuity_full(pilot_id, origin, destination, flight_date, dep_time, duration):
+    if not check_pilot_continuity_backward(pilot_id, origin, flight_date, dep_time):
+        return False
+    if not check_pilot_continuity_forward(pilot_id, destination, flight_date, dep_time, duration):
+        return False
+    return True
+def get_flight_details(flight_id):
+    with db_cur() as cursor:
+        cursor.execute('''SELECT flight_id, flight_status, departure_time,
+         departure_date, origin_airport, destination_airport, 
+         aircraft_id FROM flight WHERE flight_id=%s''', (flight_id,))
+        result=cursor.fetchone()
+        return result
+
+def can_cant_cancel_flight(flight_id):
+    with db_cur() as cursor:
+        cursor.execute('''SELECT departure_time,
+         departure_date FROM flight WHERE flight_id=%s''', (flight_id,))
+        departure_time, departure_date =cursor.fetchone()
+        time_obj = normalize_time(departure_time)
+        flight_datetime = datetime.datetime.combine(departure_date, time_obj)
+        now = datetime.datetime.now()
+        diff_hours = (flight_datetime - now).total_seconds() / 3600
+        return diff_hours >= 72
+
+def cancel_flight(flight_id):
+    with db_cur() as cursor:
+        cursor.execute("UPDATE flight SET flight_status = 'Cancelled' WHERE flight_id = %s", (flight_id,))
+
+def cancel_booking(flight_id):
+    with db_cur() as cursor:
+        # וודאי ש 'System Cancellation' כתוב בדיוק כמו ב-CHECK CONSTRAINT בסכימה
+        cursor.execute("""
+            UPDATE booking 
+            SET booking_status = 'System Cancellation', 
+                payment = 0.00 
+            WHERE flight_id = %s AND booking_status != 'System Cancellation'
+        """, (flight_id,))
 def get_booking_details(booking_id, email):
     with db_cur() as cursor:
         query = """
