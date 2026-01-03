@@ -1,14 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Passenger Details</title>
-    <style>
-        .summary-box { border: 2px solid #333; padding: 15px; background-color: #f9f9f9; margin-bottom: 20px; }
-        .price-total { font-size: 1.2em; color: green; font-weight: bold; }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Passenger Details{% endblock %}
+
+{% block content %}
+
     <h2>Flight Summary & Passenger Details</h2>
 
     {% if error %}
@@ -102,5 +97,5 @@
 
     <br>
     <a href="/">Cancel and Back to Search</a>
-</body>
-</html>
+
+{% endblock %}

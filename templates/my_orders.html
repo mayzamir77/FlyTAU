@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Orders</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
 
 <h2>My Orders</h2>
 
@@ -86,5 +84,5 @@
 <br>
 <a href="/">Back to Home Page</a>
 
-</body>
-</html>
+{% endblock %}
+

@@ -1,27 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>login</title>
-</head>
+{% extends "base.html" %}
 
-<body>
+{% block title %}Login{% endblock %}
+
+{% block content %}
 
 {% if error %}
     <p style="color:red;">{{ error }}</p>
 {% endif %}
-    <div>
-        <h1>Login</h1>
-        <form action="/login" method="POST">
-            <input placeholder="Email" autocomplete="off" type="email" name="email" maxlength="100" value="{{ email }}" required>
-            <br><br>
 
-            <input placeholder="Password" type="password" name="password" maxlength="100" required>
-            <br><br>
+<div>
+    <h1>Login</h1>
+    <form action="/login" method="POST">
+        <input placeholder="Email"
+               autocomplete="off"
+               type="email"
+               name="email"
+               maxlength="100"
+               value="{{ email }}"
+               required>
+        <br><br>
 
-            <input type="submit" value="Login">
-        </form>
-    </div>
-</body>
+        <input placeholder="Password"
+               type="password"
+               name="password"
+               maxlength="100"
+               required>
+        <br><br>
 
-</html>
+        <input type="submit" value="Login">
+    </form>
+</div>
+
+{% endblock %}

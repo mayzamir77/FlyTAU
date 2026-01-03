@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Available Flights</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Available Flights{% endblock %}
+
+{% block content %}
+
 <h2>Available Flights for {{ requested_seats }} Passengers</h2>
 <form action="/select_seats" method="POST">
     <input type="hidden" name="num_seats" value="{{ requested_seats }}">
@@ -49,5 +48,5 @@
 
     <br>
     <a href="/">Back to Search</a>
-</body>
-</html>
+
+{% endblock %}
