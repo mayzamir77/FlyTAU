@@ -564,6 +564,52 @@ def admin_cancel_flight_confirm():
     cancel_booking(flight_id)
     return render_template('cancel_flight_confirm.html', flight_id=flight_id)
 
+
+@app.route('/staff_management')
+def staff_management():
+    user_type = session.get('user_type')
+    if user_type != 'manager':
+        return redirect('/')
+    show = request.args.get('show', 'all')
+    if show == 'Pilot':
+        staff = get_pilots_only()
+    elif show == 'Attendant':
+        staff = get_attendants_only()
+    else:
+        staff = get_all_staff()
+    return render_template('staff_table.html', staff_members=staff)
+
+
+@app.route('/add_staff', methods=['GET', 'POST'])
+def add_staff():
+    user_type = session.get('user_type')
+    if user_type != 'manager':
+        return redirect('/')
+    if request.method == 'GET':
+        return render_template('add_staff.html', today=date.today().isoformat())
+    if request.method == 'POST':
+        id = request.form.get('id')
+
+        if is_id_exists(id):
+            return render_template('add_staff.html', error="Error: This ID already exists in the system!")
+        f_name = request.form.get('f_name')
+        l_name = request.form.get('l_name')
+        role = request.form.get('new_role')
+        phone = request.form.get('phone')
+        city = request.form.get('city')
+        street = request.form.get('street')
+        h_num = request.form.get('house_num')
+        s_date = request.form.get('start_date')
+        is_certified = 1 if request.form.get('is_certified') else 0
+        table = "Pilots" if role == "Pilot" else "Flight_attendants"
+
+        add_crew_to_db(table,id,f_name,l_name,phone,city,street,h_num,s_date,is_certified)
+        return redirect('/staff_management')
+
+
+
+
+
 if __name__=="__main__":
     app.run(debug=True)
 
