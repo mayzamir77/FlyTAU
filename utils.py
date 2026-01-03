@@ -132,6 +132,14 @@ def update_customer_in_db(email, first_name, last_name, passport):
         cursor.execute(query, (first_name, last_name, passport, email))
 
 
+def update_customer_phones_in_db(email, phones):
+    with db_cur() as cursor:
+        cursor.execute("DELETE FROM registered_customer_phones WHERE email = %s", (email,))
+
+        for phone in phones:
+            cursor.execute("INSERT INTO registered_customer_phones (email, phone_number) VALUES (%s, %s)",
+                           (email, phone))
+
 ##search flight func
 def get_flights_origins():
     with db_cur() as cursor:

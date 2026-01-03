@@ -95,11 +95,16 @@ def profile_details():
     last_name = request.form.get('last_name')
     passport = request.form.get('passport')
     email = session.get('user_email')
+    raw_phones = request.form.getlist('phones')
+
+    updated_phones = [p for p in raw_phones if p.strip()]
     update_customer_in_db(email, first_name, last_name, passport)
+    update_customer_phones_in_db(email, updated_phones)
 
     session['user_first_name'] = first_name
     session['user_last_name'] = last_name
     session['user_passport'] = passport
+    session['user_phones'] = updated_phones
 
     return render_template('customer_profile.html',user=get_current_user_dict(), success="Details updated!")
 

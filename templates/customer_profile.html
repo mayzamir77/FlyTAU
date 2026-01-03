@@ -18,24 +18,33 @@
         <input type="email" value="{{ user.email }}" disabled><br><br>
 
         <label for="first_name">First Name:</label><br>
-        <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}" required><br><br>
+        <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}" pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required><br><br>
 
         <label for="last_name">Last Name:</label><br>
-        <input type="text" id="last_name" name="last_name" value="{{ user.last_name }}" required><br><br>
+        <input type="text" id="last_name" name="last_name" value="{{ user.last_name }}" pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required><br><br>
 
         <label for="passport">Passport Number:</label><br>
-        <input type="text" id="passport" name="passport" value="{{ user.passport }}" required><br><br>
+        <input type="text" id="passport" name="passport" value="{{ user.passport }}" maxlength="20"  required><br><br>
 
         <label>Birth Date:</label><br>
         <input type="text" value="{{ user.birth_date }}" disabled><br><br>
 
-        <label>Registered Phone Numbers:</label>
-        <ul>
-            {% for phone in user.phones %}
-                <li>{{ phone }}</li>
-            {% endfor %}
-        </ul>
+        <label>Phone Numbers (At least one required, max 3):</label><br>
 
+        <input placeholder="Phone Number 1" type="text" name="phones"
+               value="{{ user.phones[0] if user.phones|length > 0 else '' }}"
+               minlength="9" maxlength="15" pattern="\d+" title="Please enter at least 9 digits" required>
+        <br><br>
+
+        <input placeholder="Phone Number 2 (Optional)" type="text" name="phones"
+               value="{{ user.phones[1] if user.phones|length > 1 else '' }}"
+               pattern="\d+" minlength="9" maxlength="15" title="Please enter at least 9 digits">
+        <br><br>
+
+        <input placeholder="Phone Number 3 (Optional)" type="text" name="phones"
+               value="{{ user.phones[2] if user.phones|length > 2 else '' }}"
+               pattern="\d+" minlength="9" maxlength="15" title="Please enter at least 9 digits">
+        <br><br>
         <button type="submit">Save Changes</button>
     </form>
 
