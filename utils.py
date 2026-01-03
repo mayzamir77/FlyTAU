@@ -745,3 +745,48 @@ def get_all_bookings_for_customer(email):
         rows = cursor.fetchall()
 
         return [BookingResult(row) for row in rows]
+
+def get_all_staff():
+    with db_cur() as cursor:
+        query = """
+        SELECT pilot_id AS staff_id, first_name_hebrew, last_name_hebrew, phone, city, street, house_number, start_date, long_flight_certified, 'Pilot' as role
+        FROM Pilots
+        UNION
+        SELECT attendant_id AS staff_id, first_name_hebrew, last_name_hebrew, phone, city, street, house_number, start_date, long_flight_certified, 'Flight Attendant' as role
+        FROM Flight_attendants
+        """
+        cursor.execute(query)
+        result=cursor.fetchall()
+        return result
+
+def get_pilots_only():
+    with db_cur() as cursor:
+        cursor.execute("SELECT pilot_id, first_name_hebrew, last_name_hebrew, phone, city, street, house_number, start_date, long_flight_certified, 'Pilot' as role FROM Pilots")
+        return cursor.fetchall()
+
+def get_attendants_only():
+    with db_cur() as cursor:
+        cursor.execute("SELECT attendant_id, first_name_hebrew, last_name_hebrew, phone, city, street, house_number, start_date, long_flight_certified, 'Flight Attendant' as role FROM Flight_attendants")
+        return cursor.fetchall()
+
+def add_crew_to_db(table,id,f_name,l_name,phone,city,street,h_num,s_date,is_certified):
+    id_column_name = "pilot_id" if table == "Pilots" else "attendant_id"
+    with db_cur() as cursor:
+        query = f"""
+                INSERT INTO {table} 
+                ({id_column_name},first_name_hebrew, last_name_hebrew, phone, city, street, house_number, start_date, long_flight_certified)
+                VALUES (%s,%s, %s, %s, %s, %s, %s, %s, %s)
+            """
+        cursor.execute(query,(id,f_name,l_name,phone,city,street,h_num,s_date,is_certified))
+
+
+def is_id_exists(staff_id):
+    with db_cur() as cursor:
+        cursor.execute("SELECT pilot_id FROM Pilots WHERE pilot_id = %s", (staff_id,))
+        if cursor.fetchone():
+            return True
+        cursor.execute("SELECT attendant_id FROM Flight_attendants WHERE attendant_id = %s", (staff_id,))
+        if cursor.fetchone():
+            return True
+
+    return False
