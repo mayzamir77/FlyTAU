@@ -72,6 +72,38 @@ def logout():
     session.clear()
     return redirect('/')
 
+def get_current_user_dict():
+    return {
+        'first_name': session.get('user_first_name'),
+        'last_name': session.get('user_last_name'),
+        'email': session.get('user_email'),
+        'passport': session.get('user_passport'),
+        'birth_date': session.get('user_birth_date'),
+        'phones': session.get('user_phones', [])
+    }
+
+@app.route('/profile_details', methods=['GET', 'POST'])
+def profile_details():
+    user_type = session.get('user_type')
+    if user_type != 'customer':
+        return redirect('/')
+
+    if request.method=='GET':
+        return render_template('customer_profile.html', user=get_current_user_dict())
+
+    first_name = request.form.get('first_name')
+    last_name = request.form.get('last_name')
+    passport = request.form.get('passport')
+    email = session.get('user_email')
+    update_customer_in_db(email, first_name, last_name, passport)
+
+    session['user_first_name'] = first_name
+    session['user_last_name'] = last_name
+    session['user_passport'] = passport
+
+    return render_template('customer_profile.html',user=get_current_user_dict(), success="Details updated!")
+
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'GET':
@@ -333,7 +365,7 @@ def cancel_booking_request():
 
     cancellation_fee = calculate_cancellation_fee(payment)
 
-    cancel_booking_in_db(booking_id)
+    cancel_booking_in_db(booking_id,cancellation_fee)
 
     return render_template(
         'booking_cancelled.html',

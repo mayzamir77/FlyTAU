@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Profile</title>
+</head>
+<body>
+
+    <h2>Personal Profile</h2>
+
+    {% if success %}
+        <p style="color: green;">{{ success }}</p>
+    {% endif %}
+
+    <form action="/profile_details" method="POST">
+
+        <label>Email (cannot be changed):</label><br>
+        <input type="email" value="{{ user.email }}" disabled><br><br>
+
+        <label for="first_name">First Name:</label><br>
+        <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}" required><br><br>
+
+        <label for="last_name">Last Name:</label><br>
+        <input type="text" id="last_name" name="last_name" value="{{ user.last_name }}" required><br><br>
+
+        <label for="passport">Passport Number:</label><br>
+        <input type="text" id="passport" name="passport" value="{{ user.passport }}" required><br><br>
+
+        <label>Birth Date:</label><br>
+        <input type="text" value="{{ user.birth_date }}" disabled><br><br>
+
+        <label>Registered Phone Numbers:</label>
+        <ul>
+            {% for phone in user.phones %}
+                <li>{{ phone }}</li>
+            {% endfor %}
+        </ul>
+
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <br>
+    <a href="/">Back to Homepage</a>
+
+</body>
+</html>
