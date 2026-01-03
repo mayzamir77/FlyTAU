@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flight Added Successfully</title>
+</head>
+<body>
+
+    <h1 style="color: green;">Flight Created Successfully!</h1>
+    <hr>
+
+    <h3>1. Flight Info</h3>
+    <ul>
+        <li><strong>Route:</strong> {{ origin }} to {{ destination }}</li>
+        <li><strong>Date:</strong> {{ date }}</li>
+        <li><strong>Time:</strong> {{ time }}</li>
+    </ul>
+
+    <h3>2. Aircraft Details</h3>
+    <ul>
+        <li><strong>Aircraft ID:</strong> {{ aircraft_id }}</li>
+        <li><strong>Size:</strong> {{ size }}</li>
+    </ul>
+
+    <h3>3. Seat Prices</h3>
+    <ul>
+        <li><strong>Economy Class:</strong> ${{ economy_price }} USD</li>
+        {% if business_price %}
+            <li><strong>Business Class:</strong> ${{ business_price }} USD</li>
+        {% endif %}
+    </ul>
+
+    <h3>4. Crew Assignment</h3>
+    <h4>Pilots:</h4>
+    <ul>
+        {% for info in pilot_names %}
+            <li>{{ info }}</li>
+        {% endfor %}
+    </ul>
+
+    <h4>Flight Attendants:</h4>
+    <ul>
+        {% for info in attendant_names %}
+            <li>{{ info }}</li>
+        {% endfor %}
+    </ul>
+
+    <hr>
+    <p>
+        <a href="/add_flight_step1">Add Another Flight</a> |
+        <a href="/">Back to Dashboard</a>
+    </p>
+
+</body>
+</html>

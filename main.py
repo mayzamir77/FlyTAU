@@ -471,11 +471,8 @@ def add_flight_step1():
         destination=destination,
         name=common_data['name']  # שמירה על עקביות שם המשתמש
     )
-
-
 @app.route('/add_flight_step2', methods=['POST'])
 def add_flight_step2():
-    # שליפת נתוני הטיסה מהשלב הקודם
     flight_date = request.form.get('flight_date')
     departure_time = request.form.get("departure_time")
     origin = request.form.get('origin')
@@ -483,17 +480,16 @@ def add_flight_step2():
     aircraft_id = request.form.get('selected_aircraft')
     user_name = session.get('user_first_name')
 
-    # קבלת פרטי המטוס הספציפי שנבחר
     size = request.form.get(f'size_{aircraft_id}')
     manufacturer = request.form.get(f'manufacturer_{aircraft_id}')
 
-    # קריאה ליוטילס החדש של הטייסים
     pilot_result = get_available_pilots(flight_date, origin, destination, departure_time)
+    attendant_result = get_available_attendants(flight_date, origin, destination, departure_time)
 
-    # לוגיקה לפי גודל מטוס
     required_pilots = 2 if size == 'Small' else 3
+    required_attendants = 3 if size == 'Small' else 6
 
-    if len(pilot_result) >= required_pilots:
+    if len(pilot_result) >= required_pilots and len(attendant_result) >= required_attendants:
         aircraft_data = {
             'aircraft_id': aircraft_id,
             'size': size,
@@ -503,24 +499,32 @@ def add_flight_step2():
         return render_template(
             'add_flight_3.html',
             aircraft=aircraft_data,
+            size=size, # הוספתי את זה כאן כדי שה-HTML יזהה את הגודל למחירים
             pilots=pilot_result,
+            attendants=attendant_result,
             flight_date=flight_date,
             departure_time=departure_time,
             origin=origin,
             destination=destination,
             required_pilots=required_pilots,
+            required_attendants=required_attendants,
             name=user_name
         )
     else:
-        # <<< שינוי כאן: הוספת הנתונים שנבחרו כדי להחזיר אותם לטופס >>>
+        # לוגיקת שגיאה (נשארת אותו דבר)
+        error_msg = ""
+        if len(pilot_result) < required_pilots:
+            error_msg += f"Not enough Pilots ({len(pilot_result)}/{required_pilots} available). "
+        if len(attendant_result) < required_attendants:
+            error_msg += f"Not enough Attendants ({len(attendant_result)}/{required_attendants} available)."
+
         return render_template(
             'add_flight_1.html',
             name=user_name,
             origins=get_flights_origins(),
             destinations=get_flights_destinations(),
             today=date.today().isoformat(),
-            error=f'Not enough available Pilots for a {size} aircraft ({len(pilot_result)}/{required_pilots} available).',
-            # הנתונים האלו יישלחו בחזרה לדף הראשון:
+            error=error_msg,
             saved_date=flight_date,
             saved_origin=origin,
             saved_destination=destination,
@@ -529,8 +533,57 @@ def add_flight_step2():
 
 @app.route('/add_flight_step3', methods=['POST'])
 def add_flight_step3():
-    pass
+    # 1. שליפת נתוני טיסה מהשדות הנסתרים
+    flight_date = request.form.get('flight_date')
+    departure_time = request.form.get('departure_time')
+    origin = request.form.get('origin')
+    destination = request.form.get('destination')
+    aircraft_id = request.form.get('aircraft_id')
+    size = request.form.get('size')
 
+    # 2. שליפת רשימות הצוות
+    selected_pilot_ids = request.form.getlist('selected_pilots')
+    selected_attendant_ids = request.form.getlist('selected_attendants')
+
+    # 3. שליפת מחירים מהטופס
+    prices = {
+        'economy': request.form.get('economy_price'),
+        'business': request.form.get('business_price')  # יחזור None אם לא הוצג בטופס
+    }
+
+    # 4. ולידציית כמויות צוות
+    req_pilots = 2 if size == 'Small' else 3
+    req_attendants = 3 if size == 'Small' else 6
+
+    if len(selected_pilot_ids) != req_pilots or len(selected_attendant_ids) != req_attendants:
+        from utils import get_available_pilots, get_available_attendants
+        pilots = get_available_pilots(flight_date, origin, destination, departure_time)
+        attendants = get_available_attendants(flight_date, origin, destination, departure_time)
+        return render_template('add_flight_3.html',
+                               aircraft={'aircraft_id': aircraft_id, 'size': size},
+                               pilots=pilots, attendants=attendants,
+                               error=f"Selection error: Please select {req_pilots} pilots and {req_attendants} attendants.",
+                               flight_date=flight_date, departure_time=departure_time, origin=origin,
+                               destination=destination, size=size)
+
+    # 5. שמירה בבסיס הנתונים (קריאה ל-Utils)
+    from utils import create_new_flight_complete, get_crew_names_by_ids
+    f_data = {'flight_date': flight_date, 'departure_time': departure_time, 'origin': origin,
+              'destination': destination, 'aircraft_id': aircraft_id}
+
+    if create_new_flight_complete(f_data, selected_pilot_ids, selected_attendant_ids, prices):
+        # שליפת שמות מלאים של הצוות לתצוגה
+        p_info, a_info = get_crew_names_by_ids(selected_pilot_ids, selected_attendant_ids)
+
+        return render_template('add_flight_confirm.html',
+                               origin=origin, destination=destination, date=flight_date, time=departure_time,
+                               aircraft_id=aircraft_id, size=size,
+                               pilot_names=p_info,
+                               attendant_names=a_info,
+                               economy_price=prices['economy'],
+                               business_price=prices['business'])
+    else:
+        return "Internal Server Error: Could not save flight data.", 500
 
 @app.route('/flight_added_success')
 def flight_added_success():

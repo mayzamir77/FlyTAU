@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Select Pilots</title>
+    <title>Select Crew and Prices</title>
 </head>
 <body>
 
@@ -17,11 +17,6 @@
 <p><strong>Size:</strong> {{ aircraft.size }}</p>
 <p><strong>Manufacturer:</strong> {{ aircraft.manufacturer }}</p>
 
-<h2>Select Pilots</h2>
-<p>
-    Please select exactly {{ required_pilots }} pilot{{ 's' if required_pilots > 1 else '' }}.
-</p>
-
 <form action="/add_flight_step3" method="POST">
     <input type="hidden" name="flight_date" value="{{ flight_date }}">
     <input type="hidden" name="departure_time" value="{{ departure_time }}">
@@ -31,6 +26,8 @@
     <input type="hidden" name="size" value="{{ aircraft.size }}">
     <input type="hidden" name="manufacturer" value="{{ aircraft.manufacturer }}">
 
+    <h2>Select Pilots</h2>
+    <p>Please select exactly {{ required_pilots }} pilot{{ 's' if required_pilots > 1 else '' }}.</p>
     <table border="1" cellpadding="8" cellspacing="0">
         <thead>
             <tr>
@@ -44,9 +41,7 @@
         <tbody>
         {% for pilot in pilots %}
             <tr>
-                <td>
-                    <input type="checkbox" name="selected_pilots" value="{{ pilot.pilot_id }}">
-                </td>
+                <td><input type="checkbox" name="selected_pilots" value="{{ pilot.pilot_id }}"></td>
                 <td>{{ pilot.pilot_id }}</td>
                 <td>{{ pilot.first_name }}</td>
                 <td>{{ pilot.last_name }}</td>
@@ -56,8 +51,45 @@
         </tbody>
     </table>
 
+    <h2>Select Flight Attendants</h2>
+    <p>Please select exactly {{ required_attendants }} attendant{{ 's' if required_attendants > 1 else '' }}.</p>
+    <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Attendant ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Long Flight Certified</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for attendant in attendants %}
+            <tr>
+                <td><input type="checkbox" name="selected_attendants" value="{{ attendant.attendant_id }}"></td>
+                <td>{{ attendant.attendant_id }}</td>
+                <td>{{ attendant.first_name }}</td>
+                <td>{{ attendant.last_name }}</td>
+                <td>{{ 'Yes' if attendant.long_flight_certified else 'No' }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+    <h2>Set Seat Prices (USD)</h2>
+    <p>
+        Economy Price: <input type="number" name="economy_price" required min="1"> USD
+    </p>
+
+    {% if aircraft.size == 'Large' %}
+    <p>
+        Business Price: <input type="number" name="business_price" required min="1"> USD
+    </p>
+    {% endif %}
+
     <br>
-    <input type="submit" value="Continue">
+    <input type="submit" value="Finish and Save Flight">
 </form>
 
 {% if error %}
