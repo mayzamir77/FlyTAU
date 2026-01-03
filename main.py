@@ -564,9 +564,6 @@ def admin_cancel_flight_confirm():
     cancel_booking(flight_id)
     return render_template('cancel_flight_confirm.html', flight_id=flight_id)
 
-def nothing():
-    pass
-
 if __name__=="__main__":
     app.run(debug=True)
 
