@@ -1,67 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>homepage</title>
-</head>
-<body>
-    <div>
-        <h1>Welcome to FLYTAU</h1>
-        <nav>
+{% extends "base.html" %}
+
+{% block title %}Homepage{% endblock %}
+
+{% block content %}
+
+<div>
+    <h1>Welcome to FLYTAU</h1>
+    <nav>
         <a href="/login">Login</a> |
         <a href="/signup">Sign Up</a> |
         <a href="/adminlogin">Admin Login</a>
-        </nav>
-    </div>
+    </nav>
+</div>
+
 <hr>
+
 {% if error %}
     <p style="color:red;">{{ error }}</p>
 {% endif %}
-    <h3>Search for a Flight</h3>
-    <form action="/search_flights" method="POST">
-        <label>Date:</label>
-        <input type="date" name="flight_date" min="{{today}}" required>
-        <br><br>
 
-        <label>From:</label>
-        <select name="origin">
-            {% for origin in origins %}
-                <option value="{{ origin[0] }}">{{ origin[0] }}</option>
-            {% endfor %}
-        </select>
-        <br><br>
+<h3>Search for a Flight</h3>
+<form action="/search_flights" method="POST">
+    <label>Date:</label>
+    <input type="date" name="flight_date" min="{{ today }}" required>
+    <br><br>
 
-        <label>To:</label>
-        <select name="destination">
-            {% for dest in destinations %}
-                <option value   ="{{ dest[0] }}">{{ dest[0] }}</option>
-            {% endfor %}
-        </select>
-        <br><br>
+    <label>From:</label>
+    <select name="origin">
+        {% for origin in origins %}
+            <option value="{{ origin[0] }}">{{ origin[0] }}</option>
+        {% endfor %}
+    </select>
+    <br><br>
 
-        <label>Passengers:</label>
-        <input type="number" id="num_seats" name="num_seats" min="1" max="6" value="1" required>
-        <br><br>
+    <label>To:</label>
+    <select name="destination">
+        {% for dest in destinations %}
+            <option value="{{ dest[0] }}">{{ dest[0] }}</option>
+        {% endfor %}
+    </select>
+    <br><br>
 
-        <input type="submit" value="Search Flights">
-    </form>
+    <label>Passengers:</label>
+    <input type="number" id="num_seats" name="num_seats"
+           min="1" max="6" value="1" required>
+    <br><br>
+
+    <input type="submit" value="Search Flights">
+</form>
 
 <hr>
+
 {% if manage_booking_error %}
     <p style="color:red;">{{ manage_booking_error }}</p>
 {% endif %}
 
-    <h3>Manage my Booking</h3>
-    <form action="/manage_booking" method="POST">
+<h3>Manage my Booking</h3>
+<form action="/manage_booking" method="POST">
+    <input placeholder="Booking ID" autocomplete="off"
+           type="text" name="booking_ID" required>
+    <br><br>
 
-        <input placeholder="Booking ID" autocomplete="off" type="text" name="booking_ID" required>
-        <br><br>
+    <input placeholder="Email" autocomplete="off"
+           type="email" name="booking_email" required>
+    <br><br>
 
-        <input placeholder="Email" autocomplete="off" type="email" name="booking_email" required>
-        <br><br>
+    <input type="submit" value="To my Booking">
+</form>
 
-        <input type="submit" value="To my Booking">
-    </form>
-
-</body>
-</html>
+{% endblock %}

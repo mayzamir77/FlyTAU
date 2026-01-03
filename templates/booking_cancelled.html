@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Booking Cancelled</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Booking Cancelled{% endblock %}
+
+{% block content %}
 
     <h2>Booking number <strong>{{ booking_id }}</strong> was successfully cancelled</h2>
 
@@ -22,5 +20,4 @@
         <button>Back to Home Page</button>
     </a>
 
-</body>
-</html>
+{% endblock %}
