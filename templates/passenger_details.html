@@ -47,7 +47,7 @@
             <input type="text" name="passport" value="{{ session.user_passport }}" readonly required><br><br>
 
             <label>Date of Birth:</label><br>
-            <input type="date" name="birth_date" value="{{ session.user_birth_date }}" readonly required>
+            <input type="date" name="birth_date" value="{{ session.user_birth_date }}" readonly required><br><br>
 
             <label>Phone numbers:</label><br>
             <input type="text" name="phones" value="{{ session.user_phones[0] if session.user_phones|length > 0 else '' }}" readonly required><br><br>

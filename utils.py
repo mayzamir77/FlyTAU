@@ -122,6 +122,16 @@ def check_password_manager(id,password):
         result = cursor.fetchone()
         return result is not None
 
+def update_customer_in_db(email, first_name, last_name, passport):
+    with db_cur() as cursor:
+        query = """
+            UPDATE registered_customer 
+            SET first_name_english = %s, last_name_english = %s, passport_number = %s 
+            WHERE email = %s
+        """
+        cursor.execute(query, (first_name, last_name, passport, email))
+
+
 ##search flight func
 def get_flights_origins():
     with db_cur() as cursor:
@@ -277,7 +287,7 @@ def hours_until_flight(departure_date, departure_time):  #checks time until flig
 def can_cancel_booking(departure_date, departure_time):   #checks if can cancel based on time until flight
     return hours_until_flight(departure_date, departure_time) > 36   #returns T/F
 
-  def add_booking_to_db(email,first_name,last_name,flight_id,booking_date,booking_status,payment,aircraft_id,class_type,seats,phones):
+def add_booking_to_db(email,first_name,last_name,flight_id,booking_date,booking_status,payment,aircraft_id,class_type,seats,phones):
     with db_cur() as cursor:
         if not registered_customer_exists(email):
             cursor.execute("""
@@ -306,12 +316,21 @@ def can_cancel_booking(departure_date, departure_time):   #checks if can cancel 
 def calculate_cancellation_fee(payment):   #checks how much the cancellation fee
     return (payment * Decimal('0.05')).quantize(Decimal('0.01'))
 
-def cancel_booking_in_db(booking_id):   #changing the booking status in db to customer-cancelled
-    with db_cur() as cursor:
+def cancel_booking_in_db(booking_id,cancellation_fee):    #updating the db after a flight is cancelled
+    with db_cur() as cursor:     #changing booking status and payment=0
         cursor.execute(
             """
             UPDATE booking
-            SET booking_status = 'Customer Cancellation'
+            SET booking_status = 'Customer Cancellation',
+                payment = %s
+            WHERE booking_id = %s
+            """,
+            (cancellation_fee,booking_id)
+        )
+
+        cursor.execute(      #freeing up the seats
+            """
+            DELETE FROM selected_seats_in_booking
             WHERE booking_id = %s
             """,
             (booking_id,)
