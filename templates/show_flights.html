@@ -13,6 +13,7 @@
         <tr>
             <th>Select</th>
             <th>Flight ID</th>
+            <th>Aircraft</th>
             <th>Class</th>
             <th>Departure date (From: {{ flights[0].origin if flights else '' }})</th>
             <th>Departure time</th>
@@ -26,9 +27,10 @@
                 {% for flight in flights %}
                 <tr>
                     <td>
-                        <input type="radio" name="selected_option" value="{{ flight.id }},{{ flight.class_type }}" required>
+                        <input type="radio" name="selected_option" value="{{ flight.id }},{{ flight.class_type }},{{flight.aircraft_id}}" required>
                     </td>
                     <td>{{flight.id}}</td>
+                    <td>{{flight.aircraft_id}}</td>
                     <td>{{flight.class_type}}</td>
                     <td>{{flight.departure_date}}</td>
                     <td>{{flight.departure_time}}</td>

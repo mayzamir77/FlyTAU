@@ -11,6 +11,14 @@
 <body>
     <h2>Flight Summary & Passenger Details</h2>
 
+    {% if error %}
+    <div style="background-color: #fff3cd; color: #856404; padding: 15px; border: 1px solid #ffeeba; margin-bottom: 20px;">
+        <strong>{{error}}</strong>
+        <br>
+        Please <a href="/login">Log in here</a> to continue with your booking. We've saved your flight and seats!
+    </div>
+{% endif %}
+
     <div class="summary-box">
         <h3>Flight Information</h3>
         <p><strong>Flight ID:</strong> {{ session['booking_data']['flight_id'] }}</p>
@@ -22,35 +30,74 @@
     </div>
 
     <form action="/review_order" method="POST">
+        {% if session.get('user_email') %}
         <fieldset>
-            <legend><h3>Customer Information</h3></legend>
+            <legend><h3>Customer Information (Registered)</h3></legend>
 
             <label>First Name (English):</label><br>
-            <input type="text" name="first_name"
-                   value="{{ session.get('user_first_name', '') }}" pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required><br><br>
+            <input type="text" name="first_name" value="{{ session.user_first_name }}" readonly required><br><br>
 
             <label>Last Name (English):</label><br>
-            <input type="text" name="last_name"
-                   value="{{ session.get('user_last_name', '') }}" pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required><br><br>
+            <input type="text" name="last_name" value="{{ session.user_last_name }}" readonly required><br><br>
 
             <label>Email Address:</label><br>
-            <input type="email" name="email"
-                   value="{{ session.get('user_email', '') }}"
-                   required><br><br>
+            <input type="email" name="email" value="{{ session.user_email }}" readonly required><br><br>
 
             <label>Passport Number:</label><br>
-            <input type="text" name="passport"
-                   value="{{ session.get('user_passport', '') }}"
-                   maxlength="20" required><br><br>
+            <input type="text" name="passport" value="{{ session.user_passport }}" readonly required><br><br>
 
             <label>Date of Birth:</label><br>
-            <input type="date" name="birth_date"
-                   value="{{ session.get('user_birth_date', '') }}"
-                   max="{{ today }}" required>
+            <input type="date" name="birth_date" value="{{ session.user_birth_date }}" readonly required><br><br>
+
+            <label>Phone numbers:</label><br>
+            <input type="text" name="phones" value="{{ session.user_phones[0] if session.user_phones|length > 0 else '' }}" readonly required><br><br>
+            <input type="text" name="phones" value="{{ session.user_phones[1] if session.user_phones|length > 1 else '' }}" readonly><br><br>
+            <input type="text" name="phones" value="{{ session.user_phones[2] if session.user_phones|length > 2 else '' }}" readonly>
         </fieldset>
 
+        {% else %}
+        <fieldset>
+    <legend><h3>Customer Information (Guest)</h3></legend>
+
+    <label>First Name (English):</label><br>
+    <input type="text" name="first_name"
+           value="{{ session['booking_data'].get('first_name', '') }}"
+           pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required><br><br>
+
+    <label>Last Name (English):</label><br>
+    <input type="text" name="last_name"
+           value="{{ session['booking_data'].get('last_name', '') }}"
+           pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required><br><br>
+
+    <label>Email Address:</label><br>
+    <input type="email" name="email"
+           value="{{ session['booking_data'].get('email', '') }}" required><br><br>
+
+    <label>Passport Number:</label><br>
+    <input type="text" name="passport"
+           value="{{ session['booking_data'].get('passport', '') }}" maxlength="20" required><br><br>
+
+    <label>Date of Birth:</label><br>
+    <input type="date" name="birth_date"
+           value="{{ session['booking_data'].get('birth_date', '') }}" max="{{ today }}" required>
+
+    <label>Phone Numbers:</label><br>
+            <input placeholder="Phone Number 1" type="text" name="phones"
+                   value="{{ session['booking_data'].get('phones', [''])[0] }}"
+                   minlength="9" maxlength="15" pattern="\d+" title="Please enter at least 9 digits" required><br><br>
+
+            <input placeholder="Phone Number 2 (Optional)" type="text" name="phones"
+                   value="{{ session['booking_data'].get('phones', ['', ''])[1] }}"
+                   pattern="\d+" minlength="9" maxlength="15" title="Please enter at least 9 digits"><br><br>
+
+            <input placeholder="Phone Number 3 (Optional)" type="text" name="phones"
+                   value="{{ session['booking_data'].get('phones', ['', '', ''])[2] }}"
+                   pattern="\d+" minlength="9" maxlength="15" title="Please enter at least 9 digits">
+</fieldset>
+        {% endif %}
+
         <br>
-        <input type="submit" value="Confirm & Complete Reservation">
+        <input type="submit" value="Confirm & Continue to Summary">
     </form>
 
     <br>

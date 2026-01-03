@@ -4,6 +4,8 @@ from flask_session import Session
 from datetime import timedelta, date
 from utils import *
 
+print("main started")
+
 app = Flask(__name__)
 
 app.config.update(
@@ -15,6 +17,15 @@ app.config.update(
     SESSION_COOKIE_SECURE=True
 )
 Session(app)
+
+def login_user(email, details, phones):
+    session['user_email'] = email
+    session['user_type'] = 'customer'
+    session['user_first_name'] = details['first_name']
+    session['user_last_name'] = details['last_name']
+    session['user_passport'] = details['passport']
+    session['user_birth_date'] = str(details['birth_date'])
+    session['user_phones'] = phones
 
 @app.errorhandler(404)
 def invalid_route(e):
@@ -44,43 +55,59 @@ def login():
     email = request.form.get('email')
     password = request.form.get('password')
 
-    if not customer_exists(email):
-        return render_template(
-            'login.html',
-            error="User not found. Please register or place an order as a guest."
-        )
-
-    if not registered_customer_exists(email):
-        return render_template(
-            'login.html',
-            error="This email belongs to a guest. Please register to log in."
-        )
-
-    if not check_password_customer(email, password):
-        return render_template(
-            'login.html',
-            error="Incorrect password.", email=email
-        )
+    if not registered_customer_exists(email) or not check_password_customer(email, password):
+        return render_template('login.html', error="Invalid email or password, email=email")
 
     else:
-        session['user_email'] = email
-        session['user_type'] = 'customer'
-        session['user_first_name'] = get_customer_details(email)[0]
-        session['user_last_name'] = get_customer_details(email)[1]
-        session['user_passport'] = get_customer_details(email)[2]
-        session['user_birth_date'] = get_customer_details(email)[3]
-        return redirect('/')
+        details = get_customer_details(email)
+        phones = get_customer_phones(email)
+        if details:
+            login_user(email, details, phones)
+            return redirect(session.pop('next_url', '/'))
+
+    return render_template('login.html', error="An error occurred while logging in.")
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
 
+def get_current_user_dict():
+    return {
+        'first_name': session.get('user_first_name'),
+        'last_name': session.get('user_last_name'),
+        'email': session.get('user_email'),
+        'passport': session.get('user_passport'),
+        'birth_date': session.get('user_birth_date'),
+        'phones': session.get('user_phones', [])
+    }
+
+@app.route('/profile_details', methods=['GET', 'POST'])
+def profile_details():
+    user_type = session.get('user_type')
+    if user_type != 'customer':
+        return redirect('/')
+
+    if request.method=='GET':
+        return render_template('customer_profile.html', user=get_current_user_dict())
+
+    first_name = request.form.get('first_name')
+    last_name = request.form.get('last_name')
+    passport = request.form.get('passport')
+    email = session.get('user_email')
+    update_customer_in_db(email, first_name, last_name, passport)
+
+    session['user_first_name'] = first_name
+    session['user_last_name'] = last_name
+    session['user_passport'] = passport
+
+    return render_template('customer_profile.html',user=get_current_user_dict(), success="Details updated!")
+
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'GET':
-        today_str = date.today().isoformat()
-        return render_template('signup.html',today=today_str)
+        return render_template('signup.html',today=date.today().isoformat())
 
     email = request.form.get('email')
     passport_number=request.form.get('passport_number')
@@ -95,48 +122,47 @@ def signup():
     if registered_customer_exists(email):
         return render_template('signup.html', error="This email is taken",today=date.today().isoformat())
 
-    if customer_exists(email):
+    if guest_customer_exists(email):
         turn_into_registered_db(email,first_name,last_name,passport_number,birth_date,date.today(),password,phones)
-        session['user_email'] = email
-        session['user_type'] = 'customer'
-        session['user_first_name'] = get_customer_details(email)[0]
-        session['user_last_name'] = get_customer_details(email)[1]
-        session['user_passport'] = get_customer_details(email)[2]
-        session['user_birth_date'] = get_customer_details(email)[3]
-        return redirect('/')
 
     else:
         add_customer_to_db(email,first_name,last_name,passport_number,birth_date,date.today(),password, phones)
-        session['user_email'] = email
-        session['user_type'] = 'customer'
-        session['user_first_name'] = get_customer_details(email)[0]
-        session['user_last_name'] = get_customer_details(email)[1]
-        session['user_passport'] = get_customer_details(email)[2]
-        session['user_birth_date'] = get_customer_details(email)[3]
-        return redirect('/')
+
+    details = {
+        'first_name': first_name,
+        'last_name': last_name,
+        'passport': passport_number,
+        'birth_date': birth_date
+    }
+    login_user(email, details, phones)
+
+    return redirect('/')
 
 
 
 @app.route('/search_flights', methods=['POST'])
 def search_flights():
+
     flight_date= request.form.get('flight_date')
     origin = request.form.get('origin')
     destination=request.form.get('destination')
-    num_seats = request.form.get('num_seats')
+    num_seats = int(request.form.get('num_seats'))
 
     result = get_relevant_flights(flight_date,origin, destination, num_seats)
     if not result:
         return render_template('homepage.html', origins=get_flights_origins(),
-                               destinations=get_flights_destinations(),today=date.today().isoformat(), error='No available flights. Please select differently')
+                               destinations=get_flights_destinations(),today=date.today().isoformat(), error='No available flights found for the selected criteria.')
     return render_template('show_flights.html', flights=result, requested_seats=num_seats)
 
 
 
 @app.route('/select_seats', methods=['POST'])
 def select_seats():
+
     selected_data = request.form.get('selected_option')
     num_seats = int(request.form.get('num_seats'))
-    flight_id, class_type = selected_data.split(',')
+
+    flight_id, class_type, aircraft_id = selected_data.split(',')
     price_per_seat = get_price_for_class(flight_id, class_type)
 
     session['booking_data'] = {
@@ -144,7 +170,8 @@ def select_seats():
         'class_type': class_type,
         'num_seats': num_seats,
         'price_per_seat': price_per_seat,
-        'total_price': price_per_seat * num_seats
+        'total_price': price_per_seat * num_seats,
+        'aircraft_id':aircraft_id
     }
 
     class_info = get_class_layout(flight_id, class_type)
@@ -181,6 +208,17 @@ def review_order():
     if not booking:
         return redirect('/')
 
+    email = request.form.get('email')
+    if registered_customer_exists(email) and session.get('user_email') != email:
+        session['next_url'] = '/passenger_details_after_login'
+        return render_template('passenger_details.html',
+                               seats=booking.get('selected_seats'),
+                               error=f"the email {email} is already registered.")
+
+    raw_phones = request.form.getlist('phones')
+    phones = [p for p in raw_phones if p.strip()]
+
+    booking['phones'] = phones
     booking['first_name'] = request.form.get('first_name')
     booking['last_name'] = request.form.get('last_name')
     booking['email'] = request.form.get('email')
@@ -191,34 +229,165 @@ def review_order():
 
     return render_template('order_summary.html', data=booking)
 
+@app.route('/edit_passenger_details')
+def edit_passenger_details():
+    booking = session.get('booking_data')
+    if not booking:
+        return redirect('/')
+    return render_template("passenger_details.html",
+                           seats=booking.get('selected_seats'),
+                           today=date.today().isoformat())
+
+
+@app.route('/passenger_details_after_login')
+def passenger_details_after_login():
+    booking = session.get('booking_data')
+    if not booking:
+        return redirect('/')
+
+    return render_template("passenger_details.html",
+                           seats=booking.get('selected_seats'),
+                           today=date.today().isoformat())
+
 @app.route('/confirm_booking', methods=['POST'])
 def confirm_booking():
-    pass
+    booking = session.get('booking_data')
+    if not booking:
+        return redirect('/')
+    email = booking['email']
+    first_name=booking['first_name']
+    last_name=booking['last_name']
+    flight_id=booking['flight_id']
+    booking_date=date.today()
+    booking_status='Active'
+    payment=booking['total_price']
+    aircraft_id=booking['aircraft_id']
+    class_type=booking['class_type']
+    seats=booking['selected_seats']
+    phones=booking['phones']
+
+    order_id=add_booking_to_db(email,first_name,last_name,flight_id,booking_date,booking_status,payment,aircraft_id,class_type,seats,phones)
+    session.pop('booking_data', None)
+    return render_template('booking_success.html', order_id=order_id)
 
 
-# --- ממשק לקוח / אורח ---
 
+# --- ממשק לקוח / אורח --- רונה
 
-@app.route('/manage_booking', methods=['GET', 'POST'])
+@app.route('/manage_booking', methods=['GET', 'POST'])   #when customer searches booking in homepage
 def manage_booking():
-    # ניהול הזמנה לפי מספר הזמנה ואימייל [cite: 14, 20, 129]
-    pass
 
-@app.route('/booking_history')
-def booking_history():
-    # צפייה בהיסטוריית הזמנות למשתמשים רשומים בלבד [cite: 66, 71, 158]
-    pass
+    if request.method == 'GET':     #when the form wasnt filled
+        return redirect('/')    #go to homepage
+
+    booking_id = int(request.form.get('booking_ID'))  #getting the fields the customer filled
+
+    if session.get('user_type') == 'customer':   #if customer in session
+        email = session.get('user_email')
+
+    else:
+        email = request.form.get('booking_email')    #customer not in session
+
+    booking = get_booking_details(booking_id, email)    #getting all the booking details from db
+
+    if not booking:  #if booking doesnt exist
+        origins = get_flights_origins()
+        destinations = get_flights_destinations()
+        today_str = date.today().isoformat()
+
+        if session.get('user_type') == 'customer':   #if registered customer
+            return render_template(
+                'customer_homepage.html',
+                name=session.get('user_first_name'),
+                origins=origins,
+                destinations=destinations,
+                today=today_str,
+                manage_booking_error="Booking doesn't exist. Please check details."
+            )
+
+        return render_template(                #if not registered customer
+            'homepage.html',
+            origins=origins,
+            destinations=destinations,
+            today=today_str,
+            manage_booking_error="Booking doesn't exist. Please check details."
+        )
+
+    if booking.booking_status != 'Active':
+        origins = get_flights_origins()
+        destinations = get_flights_destinations()
+        today_str = date.today().isoformat()
+
+        error_msg = "This booking is no longer active and cannot be managed."
+
+        if session.get('user_type') == 'customer':
+            return render_template(
+                'customer_homepage.html',
+                name=session.get('user_first_name'),
+                origins=origins,
+                destinations=destinations,
+                today=today_str,
+                manage_booking_error=error_msg
+            )
+
+        return render_template(
+            'homepage.html',
+            origins=origins,
+            destinations=destinations,
+            today=today_str,
+            manage_booking_error=error_msg
+        )
+
+    departure_date = booking.departure_date
+    departure_time = booking.departure_time
+    payment = booking.payment
+    can_cancel = can_cancel_booking(departure_date, departure_time)
+    cancellation_fee = calculate_cancellation_fee(payment)
+
+    return render_template('manage_booking.html',booking=booking, can_cancel=can_cancel, cancellation_fee=cancellation_fee, back_url=request.referrer)  #if booking exists
 
 
-@app.route('/cancel_booking_request', methods=['POST'])
+@app.route('/cancel_booking_request', methods=['GET', 'POST'])
 def cancel_booking_request():
-    # עמוד ביטול הזמנה ובדיקת תנאי 36 שעות [cite: 134, 138]
-    pass
 
-@app.route('/booking_cancelled')
-def booking_cancelled():
-    # הצגת פרטי הזמנה שבוטלה בהצלחה [cite: 151, 152]
-    pass
+    if request.method == 'GET':     #when the form wasnt filled
+        return redirect('/')    #go to homepage
+
+    booking_id = int(request.form.get('booking_id'))
+
+    if session.get('user_type') == 'customer':
+        email = session.get('user_email')
+    else:
+        email = request.form.get('booking_email')
+
+    booking = get_booking_details(booking_id, email)
+    payment = booking.payment
+
+    cancellation_fee = calculate_cancellation_fee(payment)
+
+    cancel_booking_in_db(booking_id,cancellation_fee)
+
+    return render_template(
+        'booking_cancelled.html',
+        booking_id=booking_id,
+        cancellation_fee=cancellation_fee
+    )
+
+
+@app.route('/my_orders')   #show all bookings for customer. no post/get because this is with a link.
+def my_orders():
+    if session.get('user_type') != 'customer':
+        return redirect('/login')
+
+    email = session.get('user_email')
+    status = request.args.get('status')  # מה-select
+
+    orders = get_all_bookings_for_customer(email)
+
+    if status:
+        orders = [o for o in orders if o.booking_status == status]
+
+    return render_template('my_orders.html', orders=orders, selected_status=status)
 
 # --- ממשק מנהל (Admin) ---
 
@@ -394,5 +563,3 @@ def admin_cancel_flight_confirm():
 if __name__=="__main__":
     app.run(debug=True)
 
-if __name__=="__main__":
-    app.run(debug=True)
