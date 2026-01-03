@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Available Aircraft And Staff</title>
+</head>
+<body>
+
+<h2>Flight Details</h2>
+<p><strong>Date:</strong> {{ flight_date }}</p>
+<p><strong>Departure Time:</strong> {{ departure_time }}</p>
+<p><strong>Origin:</strong> {{ origin }}</p>
+<p><strong>Destination:</strong> {{ destination }}</p>
+
+<h3>Select Available Aircraft</h3>
+<form action="/add_flight_step2" method="POST">
+    <input type="hidden" name="flight_date" value="{{ flight_date }}">
+    <input type="hidden" name="departure_time" value="{{ departure_time }}">
+    <input type="hidden" name="origin" value="{{ origin }}">
+    <input type="hidden" name="destination" value="{{ destination }}">
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Aircraft ID</th>
+                <th>Size</th>
+                <th>Manufacturer</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for ac in aircraft %}
+            <tr>
+                <td>
+                    <input type="radio" name="selected_aircraft" value="{{ ac.aircraft_id }}" required>
+                    <!-- מוסיפים hidden fields עם הגודל והיצרן -->
+                    <input type="hidden" name="size_{{ ac.aircraft_id }}" value="{{ ac.size }}">
+                    <input type="hidden" name="manufacturer_{{ ac.aircraft_id }}" value="{{ ac.manufacturer }}">
+                </td>
+                <td>{{ ac.aircraft_id }}</td>
+                <td>{{ ac.size }}</td>
+                <td>{{ ac.manufacturer }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    <input type="submit" value="Continue">
+</form>
+
+<br>
+<a href="/">Back to Home</a>
+
+</body>
+</html>

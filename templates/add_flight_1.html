@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>add flight 1</title>
+</head>
+<body>
+<hr>
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+{% endif %}
+    <h3>Choose Flight Details</h3>
+    <form action='/add_flight_step1' method="POST">
+        <label>Date:</label>
+        <input type="date" name="flight_date" min="{{today}}" value="{{ saved_date }}" required>
+        <br><br>
+
+        <label>From:</label>
+        <select name="origin">
+            {% for origin in origins %}
+                <option value="{{ origin[0] }}" {% if origin[0] == saved_origin %}selected{% endif %}>
+                    {{ origin[0] }}
+                </option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <label>To:</label>
+        <select name="destination">
+            {% for dest in destinations %}
+                <option value="{{ dest[0] }}" {% if dest[0] == saved_destination %}selected{% endif %}>
+                    {{ dest[0] }}
+                </option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <label>Departure Time</label>
+        <input type="time" name="departure_time" value="{{ saved_time }}" required>
+        <br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+
+</body>
+</html>

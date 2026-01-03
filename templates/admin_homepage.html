@@ -2,9 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>admin homepage</title>
 </head>
 <body>
+    <div>
+        <h1>HELLO {{name}}</h1>
+        <nav>
+            <a href="/logout">Logout</a> |
+            <a href='/flight_board'>Flight Board</a> |
+            <a href='/add_flight_step1'>Add Flight</a> |
+            <a href='/admin_homepage?show_cancel=true'>Cancel Flight</a>
+        </nav>
 
+        {% if show_cancel %}
+        <div>
+            <h2>Cancel a Flight</h2>
+            <form action="/admin_cancel_flight" method="post">
+                <label for="flight_number">Flight Number:</label>
+                <input type="text" id="flight_number" name="flight_number" required>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+    <hr>
 </body>
 </html>
+

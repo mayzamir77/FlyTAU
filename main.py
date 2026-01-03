@@ -29,7 +29,7 @@ def homepage():
     today_str = date.today().isoformat()
 
     if user_type == 'manager':
-        return render_template('manager_homepage.html', name=session.get('user_first_name'))
+        return render_template('admin_homepage.html', name=session.get('user_first_name'))
 
     elif user_type == 'customer':
         return render_template('customer_homepage.html', name=session.get('user_first_name'),origins=origins, destinations=destinations, today=today_str)
@@ -236,23 +236,132 @@ def adminlogin():
     if not check_password_manager(id,password):
         return render_template('adminlogin.html' , error="Incorrect Passsword")
 
+    first_name, last_name = get_admin_details(id)
+    if first_name is None:
+        return render_template('adminlogin.html', error="Admin details not found")
+
     else:
-        return redirect('/')
+        session['user_type'] = 'manager'
+        session['user_id'] = id
+        session['user_first_name'] = first_name
+        session['user_last_name'] = last_name
+        return redirect('/admin_homepage')
+
 
 @app.route('/admin_homepage')
 def admin_dashboard():
-    # עמוד הבית של המנהל [cite: 168]
-    pass
+    user_type = session.get('user_type')
+    if user_type == 'manager':
+        show_cancel = request.args.get('show_cancel') == 'true'
+        return render_template('admin_homepage.html', name=session.get('user_first_name'),show_cancel=show_cancel)
 
-@app.route('/add_flight_step1', methods=['GET', 'POST'])
+    else:
+        return redirect("/adminlogin")
+
+
+@app.route('/add_flight_step1', methods=['POST', 'GET'])
 def add_flight_step1():
-    # שלב 1 בהוספת טיסה: בחירת יעד, מקור ותאריך [cite: 187, 192]
+    # הוצאת נתוני בסיס למשתנה כדי למנוע כפילויות בקוד
+    common_data = {
+        'origins': get_flights_origins(),
+        'destinations': get_flights_destinations(),
+        'today': date.today().isoformat(),
+        'name': session.get('user_first_name')
+    }
+
+    if request.method == 'GET':
+        return render_template('add_flight_1.html', **common_data)
+
+    # שליפת נתונים מהטופס
+    flight_date = request.form.get('flight_date')
+    departure_time = request.form.get("departure_time")
+    origin = request.form.get('origin')
+    destination = request.form.get('destination')
+
+    # בדיקת תקינות בסיסית לפני הניתוח הכבד
+    if not all([flight_date, departure_time, origin, destination]):
+        return render_template('add_flight_1.html', **common_data, error='All fields are required.')
+
+    # קריאה לפונקציית השירות (היוטילס) שעברנו עליה
+    aircraft_result = get_available_aircraft(flight_date, origin, destination, departure_time)
+
+    if not aircraft_result:
+        return render_template(
+            'add_flight_1.html',
+            **common_data,
+            error='No available Aircraft for this route/time. Please select differently.'
+        )
+
+    # מעבר לשלב 2 עם כל הנתונים הדרושים
+    return render_template(
+        'add_flight_2.html',
+        aircraft=aircraft_result,
+        flight_date=flight_date,
+        departure_time=departure_time,
+        origin=origin,
+        destination=destination,
+        name=common_data['name']  # שמירה על עקביות שם המשתמש
+    )
+
+
+@app.route('/add_flight_step2', methods=['POST'])
+def add_flight_step2():
+    # שליפת נתוני הטיסה מהשלב הקודם
+    flight_date = request.form.get('flight_date')
+    departure_time = request.form.get("departure_time")
+    origin = request.form.get('origin')
+    destination = request.form.get('destination')
+    aircraft_id = request.form.get('selected_aircraft')
+    user_name = session.get('user_first_name')
+
+    # קבלת פרטי המטוס הספציפי שנבחר
+    size = request.form.get(f'size_{aircraft_id}')
+    manufacturer = request.form.get(f'manufacturer_{aircraft_id}')
+
+    # קריאה ליוטילס החדש של הטייסים
+    pilot_result = get_available_pilots(flight_date, origin, destination, departure_time)
+
+    # לוגיקה לפי גודל מטוס
+    required_pilots = 2 if size == 'Small' else 3
+
+    if len(pilot_result) >= required_pilots:
+        aircraft_data = {
+            'aircraft_id': aircraft_id,
+            'size': size,
+            'manufacturer': manufacturer
+        }
+
+        return render_template(
+            'add_flight_3.html',
+            aircraft=aircraft_data,
+            pilots=pilot_result,
+            flight_date=flight_date,
+            departure_time=departure_time,
+            origin=origin,
+            destination=destination,
+            required_pilots=required_pilots,
+            name=user_name
+        )
+    else:
+        # <<< שינוי כאן: הוספת הנתונים שנבחרו כדי להחזיר אותם לטופס >>>
+        return render_template(
+            'add_flight_1.html',
+            name=user_name,
+            origins=get_flights_origins(),
+            destinations=get_flights_destinations(),
+            today=date.today().isoformat(),
+            error=f'Not enough available Pilots for a {size} aircraft ({len(pilot_result)}/{required_pilots} available).',
+            # הנתונים האלו יישלחו בחזרה לדף הראשון:
+            saved_date=flight_date,
+            saved_origin=origin,
+            saved_destination=destination,
+            saved_time=departure_time
+        )
+
+@app.route('/add_flight_step3', methods=['POST'])
+def add_flight_step3():
     pass
 
-@app.route('/add_flight_step2', methods=['GET', 'POST'])
-def add_flight_step2():
-    # שלב 2 בהוספת טיסה: בחירת מטוס, צוות ומחירים [cite: 214, 237, 249]
-    pass
 
 @app.route('/flight_added_success')
 def flight_added_success():
@@ -266,8 +375,21 @@ def flight_board():
 
 @app.route('/admin_cancel_flight', methods=['POST'])
 def admin_cancel_flight():
-    # ביטול טיסה על ידי מנהל ועדכון כל ההזמנות הקשורות [cite: 173, 293, 299]
-    pass
+    flight_id=request.form.get('flight_number')
+    flight_id, flight_status, departure_time, departure_date, origin_airport, destination_airport, aircraft_id= get_flight_details(flight_id)
+    cancel_time=can_cant_cancel_flight(flight_id)
+    return render_template('cancel_flight.html',flight_id=flight_id,flight_status=flight_status,
+                           departure_time=departure_time,departure_date=departure_date,
+                           origin_airport=origin_airport,destination_airport=destination_airport,
+                           aircraft_id=aircraft_id,cancel_time=cancel_time)
+
+@app.route('/admin_cancel_flight/confirm', methods=['POST'])
+def admin_cancel_flight_confirm():
+    flight_id = request.form.get('flight_number')
+    cancel_flight(flight_id)
+    cancel_booking(flight_id)
+    return render_template('cancel_flight_confirm.html', flight_id=flight_id)
+
 
 if __name__=="__main__":
     app.run(debug=True)
