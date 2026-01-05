@@ -986,6 +986,59 @@ def get_all_bookings_for_customer(email):
 
         return [BookingResult(row) for row in rows]
 
+def get_all_aircrafts():    # showing the admin all the planes
+    with db_cur() as cursor:
+        cursor.execute("""
+            SELECT a.aircraft_id, a.manufacturer, a.size, a.purchase_date,
+                   c.class_type, c.num_rows, c.num_columns
+            FROM aircraft a
+            LEFT JOIN class c ON a.aircraft_id = c.aircraft_id
+            ORDER BY a.aircraft_id, c.class_type
+        """)
+        rows = cursor.fetchall()
+
+    aircrafts = {}
+
+    for row in rows:
+        aircraft_id, manufacturer, size, purchase_date, class_type, num_rows, num_columns = row
+
+        if aircraft_id not in aircrafts:
+            aircrafts[aircraft_id] = {
+                "aircraft_id": aircraft_id,
+                "manufacturer": manufacturer,
+                "size": size,
+                "purchase_date": purchase_date,
+                "classes": []
+            }
+
+        if class_type is not None:
+            aircrafts[aircraft_id]["classes"].append({
+                "class_type": class_type,
+                "num_rows": num_rows,
+                "num_columns": num_columns
+            })
+
+    return aircrafts.values()
+
+
+def add_aircraft(manufacturer, size):
+    with db_cur() as cursor:
+        cursor.execute("""
+            INSERT INTO aircraft (manufacturer, size, purchase_date)
+            VALUES (%s, %s, CURDATE())
+        """, (manufacturer, size))
+
+        aircraft_id = cursor.lastrowid
+        return aircraft_id
+
+def add_class(aircraft_id, class_type, num_rows, num_columns):
+    with db_cur() as cursor:
+        cursor.execute("""
+            INSERT INTO class (aircraft_id, class_type, num_rows, num_columns)
+            VALUES (%s, %s, %s, %s)
+        """, (aircraft_id, class_type, num_rows, num_columns))
+
+
 def get_all_staff():
     with db_cur() as cursor:
         query = """

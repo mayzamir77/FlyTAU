@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}add_aircraft1{% endblock %}
+
+{% block content %}
+
+<h2>Add New Aircraft</h2>
+
+<form method="POST">
+    <label>Manufacturer:</label><br>
+    <select name="manufacturer" required>
+        <option value="Dassault">Dassault</option>
+        <option value="Boeing">Boeing</option>
+        <option value="Airbus">Airbus</option>
+    </select><br><br>
+
+    <label>Size:</label><br>
+    <select name="size" required>
+        <option value="Small">Small</option>
+        <option value="Large">Large</option>
+    </select><br><br>
+
+    <input type="submit" value="Continue">
+</form>
+
+{% endblock %}
