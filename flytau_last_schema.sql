@@ -25,7 +25,7 @@ DROP TABLE IF EXISTS `aircraft`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `aircraft` (
-  `aircraft_id` varchar(50) NOT NULL,
+  `aircraft_id` int NOT NULL AUTO_INCREMENT,
   `manufacturer` varchar(20) NOT NULL,
   `size` varchar(30) NOT NULL,
   `purchase_date` date DEFAULT NULL,
@@ -52,16 +52,14 @@ DROP TABLE IF EXISTS `booking`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `booking` (
-  `booking_id` varchar(50) NOT NULL,
+  `booking_id` int NOT NULL AUTO_INCREMENT,
   `customer_email` varchar(100) NOT NULL,
-  `flight_id` varchar(20) NOT NULL,
+  `flight_id` int NOT NULL,
   `booking_date` date DEFAULT NULL,
   `booking_status` varchar(50) NOT NULL,
   `payment` decimal(10,2) DEFAULT '0.00',
   PRIMARY KEY (`booking_id`),
-  KEY `customer_email` (`customer_email`),
   KEY `flight_id` (`flight_id`),
-  CONSTRAINT `booking_ibfk_1` FOREIGN KEY (`customer_email`) REFERENCES `customer` (`email`),
   CONSTRAINT `booking_ibfk_2` FOREIGN KEY (`flight_id`) REFERENCES `flight` (`flight_id`),
   CONSTRAINT `booking_chk_1` CHECK ((`booking_status` in (_utf8mb4'Active',_utf8mb4'Completed',_utf8mb4'Customer Cancellation',_utf8mb4'System Cancellation')))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -84,7 +82,7 @@ DROP TABLE IF EXISTS `class`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `class` (
-  `aircraft_id` varchar(50) NOT NULL,
+  `aircraft_id` int NOT NULL,
   `class_type` varchar(20) NOT NULL,
   `num_rows` int DEFAULT NULL,
   `num_columns` int DEFAULT NULL,
@@ -111,8 +109,8 @@ DROP TABLE IF EXISTS `classes_in_flight`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `classes_in_flight` (
-  `flight_id` varchar(20) NOT NULL,
-  `aircraft_id` varchar(50) NOT NULL,
+  `flight_id` int NOT NULL,
+  `aircraft_id` int NOT NULL,
   `class_type` varchar(20) NOT NULL,
   `seat_price` decimal(10,2) NOT NULL,
   PRIMARY KEY (`flight_id`,`aircraft_id`,`class_type`),
@@ -133,54 +131,6 @@ LOCK TABLES `classes_in_flight` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `customer`
---
-
-DROP TABLE IF EXISTS `customer`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `customer` (
-  `email` varchar(100) NOT NULL,
-  `first_name_english` varchar(50) NOT NULL,
-  `last_name_english` varchar(50) NOT NULL,
-  PRIMARY KEY (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `customer`
---
-
-LOCK TABLES `customer` WRITE;
-/*!40000 ALTER TABLE `customer` DISABLE KEYS */;
-/*!40000 ALTER TABLE `customer` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `customer_phone_numbers`
---
-
-DROP TABLE IF EXISTS `customer_phone_numbers`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `customer_phone_numbers` (
-  `email` varchar(100) NOT NULL,
-  `phone_number` varchar(15) NOT NULL,
-  PRIMARY KEY (`email`,`phone_number`),
-  CONSTRAINT `customer_phone_numbers_ibfk_1` FOREIGN KEY (`email`) REFERENCES `customer` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `customer_phone_numbers`
---
-
-LOCK TABLES `customer_phone_numbers` WRITE;
-/*!40000 ALTER TABLE `customer_phone_numbers` DISABLE KEYS */;
-/*!40000 ALTER TABLE `customer_phone_numbers` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `flight`
 --
 
@@ -188,13 +138,13 @@ DROP TABLE IF EXISTS `flight`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `flight` (
-  `flight_id` varchar(20) NOT NULL,
+  `flight_id` int NOT NULL AUTO_INCREMENT,
   `flight_status` varchar(20) NOT NULL,
   `departure_time` time NOT NULL,
   `departure_date` date NOT NULL,
   `origin_airport` varchar(10) NOT NULL,
   `destination_airport` varchar(10) NOT NULL,
-  `aircraft_id` varchar(50) NOT NULL,
+  `aircraft_id` int NOT NULL,
   PRIMARY KEY (`flight_id`),
   KEY `aircraft_id` (`aircraft_id`),
   KEY `origin_airport` (`origin_airport`,`destination_airport`),
@@ -251,7 +201,7 @@ DROP TABLE IF EXISTS `flight_attendants_assignment`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `flight_attendants_assignment` (
-  `flight_id` varchar(20) NOT NULL,
+  `flight_id` int NOT NULL,
   `attendant_id` varchar(50) NOT NULL,
   PRIMARY KEY (`flight_id`,`attendant_id`),
   KEY `attendant_id` (`attendant_id`),
@@ -267,6 +217,56 @@ CREATE TABLE `flight_attendants_assignment` (
 LOCK TABLES `flight_attendants_assignment` WRITE;
 /*!40000 ALTER TABLE `flight_attendants_assignment` DISABLE KEYS */;
 /*!40000 ALTER TABLE `flight_attendants_assignment` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `guest_customer`
+--
+
+DROP TABLE IF EXISTS `guest_customer`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `guest_customer` (
+  `email` varchar(100) NOT NULL,
+  `first_name_english` varchar(50) NOT NULL,
+  `last_name_english` varchar(50) NOT NULL,
+  PRIMARY KEY (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `guest_customer`
+--
+
+LOCK TABLES `guest_customer` WRITE;
+/*!40000 ALTER TABLE `guest_customer` DISABLE KEYS */;
+INSERT INTO `guest_customer` VALUES ('eladi.levy@gmail.com','elad','levy');
+/*!40000 ALTER TABLE `guest_customer` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `guest_customer_phones`
+--
+
+DROP TABLE IF EXISTS `guest_customer_phones`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `guest_customer_phones` (
+  `email` varchar(100) NOT NULL,
+  `phone_number` varchar(15) NOT NULL,
+  PRIMARY KEY (`email`,`phone_number`),
+  CONSTRAINT `guest_phone_ibfk_1` FOREIGN KEY (`email`) REFERENCES `guest_customer` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `guest_customer_phones`
+--
+
+LOCK TABLES `guest_customer_phones` WRITE;
+/*!40000 ALTER TABLE `guest_customer_phones` DISABLE KEYS */;
+INSERT INTO `guest_customer_phones` VALUES ('eladi.levy@gmail.com','0508672366');
+/*!40000 ALTER TABLE `guest_customer_phones` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -296,6 +296,7 @@ CREATE TABLE `managers` (
 
 LOCK TABLES `managers` WRITE;
 /*!40000 ALTER TABLE `managers` DISABLE KEYS */;
+INSERT INTO `managers` VALUES ('admin1','משה','לוי',NULL,NULL,NULL,NULL,'2020-01-01','admin123');
 /*!40000 ALTER TABLE `managers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -326,6 +327,7 @@ CREATE TABLE `pilots` (
 
 LOCK TABLES `pilots` WRITE;
 /*!40000 ALTER TABLE `pilots` DISABLE KEYS */;
+INSERT INTO `pilots` VALUES ('345','משה','לוי','0528194007','Savyon','Salit',6,'2026-01-03',1);
 /*!40000 ALTER TABLE `pilots` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -337,7 +339,7 @@ DROP TABLE IF EXISTS `pilots_assignment`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `pilots_assignment` (
-  `flight_id` varchar(20) NOT NULL,
+  `flight_id` int NOT NULL,
   `pilot_id` varchar(50) NOT NULL,
   PRIMARY KEY (`flight_id`,`pilot_id`),
   KEY `pilot_id` (`pilot_id`),
@@ -364,12 +366,13 @@ DROP TABLE IF EXISTS `registered_customer`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `registered_customer` (
   `email` varchar(100) NOT NULL,
+  `first_name_english` varchar(50) NOT NULL,
+  `last_name_english` varchar(50) NOT NULL,
   `passport_number` varchar(20) NOT NULL,
   `birth_date` date NOT NULL,
   `registration_date` date NOT NULL,
   `customer_password` varchar(100) NOT NULL,
-  PRIMARY KEY (`email`),
-  CONSTRAINT `registered_customer_ibfk_1` FOREIGN KEY (`email`) REFERENCES `customer` (`email`)
+  PRIMARY KEY (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -379,7 +382,33 @@ CREATE TABLE `registered_customer` (
 
 LOCK TABLES `registered_customer` WRITE;
 /*!40000 ALTER TABLE `registered_customer` DISABLE KEYS */;
+INSERT INTO `registered_customer` VALUES ('drorz@levitansharon.co.il','Dror','Zamir','123456','2002-05-07','2026-01-03','Drorzamir'),('Galicaspi@g.com','gali','caspi','1111111','1998-11-07','2026-01-05','123456'),('mau@gmail.com','mau','zamir','1245677','2002-05-27','2026-01-05','087645'),('mayzamir@gmail.com','may','zamir','123456','2002-05-27','2025-12-31','mayzamir'),('mjn@gmai.com','msh','nd','1245677','2000-05-04','2026-01-05','123666'),('sara@gmail.com','sara','zamir','56789','1970-01-26','2025-12-31','saraza');
 /*!40000 ALTER TABLE `registered_customer` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `registered_customer_phones`
+--
+
+DROP TABLE IF EXISTS `registered_customer_phones`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `registered_customer_phones` (
+  `email` varchar(100) NOT NULL,
+  `phone_number` varchar(15) NOT NULL,
+  PRIMARY KEY (`email`,`phone_number`),
+  CONSTRAINT `reg_phone_ibfk_1` FOREIGN KEY (`email`) REFERENCES `registered_customer` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `registered_customer_phones`
+--
+
+LOCK TABLES `registered_customer_phones` WRITE;
+/*!40000 ALTER TABLE `registered_customer_phones` DISABLE KEYS */;
+INSERT INTO `registered_customer_phones` VALUES ('drorz@levitansharon.co.il','0546656097'),('Galicaspi@g.com','0099887766'),('Galicaspi@g.com','123456789'),('mau@gmail.com','0528194007'),('mau@gmail.com','0987655454'),('mayzamir@gmail.com','0528194007'),('mjn@gmai.com','0987655454'),('sara@gmail.com','0508672366');
+/*!40000 ALTER TABLE `registered_customer_phones` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -403,6 +432,7 @@ CREATE TABLE `routes` (
 
 LOCK TABLES `routes` WRITE;
 /*!40000 ALTER TABLE `routes` DISABLE KEYS */;
+INSERT INTO `routes` VALUES ('TLV','CDG',300),('TLV','JFK',720);
 /*!40000 ALTER TABLE `routes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -414,7 +444,7 @@ DROP TABLE IF EXISTS `seat`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `seat` (
-  `aircraft_id` varchar(50) NOT NULL,
+  `aircraft_id` int NOT NULL,
   `class_type` varchar(20) NOT NULL,
   `row_num` int NOT NULL,
   `column_letter` char(1) NOT NULL,
@@ -440,8 +470,8 @@ DROP TABLE IF EXISTS `selected_seats_in_booking`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `selected_seats_in_booking` (
-  `booking_id` varchar(50) NOT NULL,
-  `aircraft_id` varchar(50) NOT NULL,
+  `booking_id` int NOT NULL,
+  `aircraft_id` int NOT NULL,
   `class_type` varchar(20) NOT NULL,
   `row_num` int NOT NULL,
   `column_letter` char(1) NOT NULL,
@@ -460,29 +490,6 @@ LOCK TABLES `selected_seats_in_booking` WRITE;
 /*!40000 ALTER TABLE `selected_seats_in_booking` DISABLE KEYS */;
 /*!40000 ALTER TABLE `selected_seats_in_booking` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `unregistered_customer`
---
-
-DROP TABLE IF EXISTS `unregistered_customer`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `unregistered_customer` (
-  `email` varchar(100) NOT NULL,
-  PRIMARY KEY (`email`),
-  CONSTRAINT `unregistered_customer_ibfk_1` FOREIGN KEY (`email`) REFERENCES `customer` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `unregistered_customer`
---
-
-LOCK TABLES `unregistered_customer` WRITE;
-/*!40000 ALTER TABLE `unregistered_customer` DISABLE KEYS */;
-/*!40000 ALTER TABLE `unregistered_customer` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -493,4 +500,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-27 12:57:18
+-- Dump completed on 2026-01-05 11:33:24
