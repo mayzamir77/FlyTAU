@@ -595,10 +595,24 @@ def flight_added_success():
     # דף אישור לאחר הוספת טיסה חדשה [cite: 265, 266]
     pass
 
-@app.route('/flight_board', methods=['GET', 'POST'])
-def flight_board():
-    # לוח הטיסות למנהל כולל סינונים [cite: 179, 276, 289]
-    pass
+
+@app.route('/flight_board', methods=['GET'])
+def show_flight_board():
+    user_type = session.get('user_type')
+
+    # אם זה מנהל, הוא יכול לסנן או לראות הכל. אם לא, הוא רואה רק Active
+    if user_type == 'manager':
+        selected_status = request.args.get('status', 'All')
+    else:
+        selected_status = 'Active'
+
+    flights = flight_board(selected_status)
+
+    return render_template('flight_board.html',
+                           flights=flights,
+                           user_type=user_type,
+                           current_status=selected_status)
+
 
 @app.route('/admin_cancel_flight', methods=['POST'])
 def admin_cancel_flight():

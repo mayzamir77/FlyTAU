@@ -889,11 +889,7 @@ class BookingResult:    #saves the info about a booking, row indicates a row in 
 
 def hours_until_flight(departure_date, departure_time):  #checks time until flight
 
-    flight_datetime = datetime(
-        year=departure_date.year,
-        month=departure_date.month,
-        day=departure_date.day
-    )
+    flight_datetime = datetime(year=departure_date.year,month=departure_date.month,day=departure_date.day)
 
     if isinstance(departure_time, timedelta):     #if mysql brings the time as timedelta
         flight_datetime = flight_datetime + departure_time
@@ -1034,3 +1030,33 @@ def is_id_exists(staff_id):
             return True
 
     return False
+
+def flight_board(status_filter):
+    with db_cur() as cursor:
+        if status_filter == 'All':
+            where_clause = "1=1"
+            params = []
+        else:
+            where_clause = "f.flight_status = %s"
+            params = [status_filter]
+
+        query = f"""
+            SELECT 
+                f.flight_id, 
+                f.departure_date, 
+                f.departure_time, 
+                f.origin_airport, 
+                f.destination_airport, 
+                f.aircraft_id,
+                MIN(cif.seat_price) as starting_price,
+                f.flight_status
+            FROM flight f
+            JOIN classes_in_flight cif ON f.flight_id = cif.flight_id
+            WHERE {where_clause}
+            GROUP BY 
+                f.flight_id, f.departure_date, f.departure_time, 
+                f.origin_airport, f.destination_airport, f.aircraft_id, f.flight_status
+            ORDER BY f.departure_date ASC
+        """
+        cursor.execute(query, params)
+        return cursor.fetchall()
