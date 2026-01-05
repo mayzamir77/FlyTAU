@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}manage aircrafts{% endblock %}
+
+{% block content %}
+
+<h2>FlyTAU's Aircrafts</h2>
+
+<table border="1">
+    <tr>
+        <th>Aircraft ID</th>
+        <th>Manufacturer</th>
+        <th>Size</th>
+        <th>Purchase Date</th>
+        <th>Classes</th>
+    </tr>
+
+    {% for a in aircrafts %}
+    <tr>
+        <td>{{ a.aircraft_id }}</td>
+        <td>{{ a.manufacturer }}</td>
+        <td>{{ a.size }}</td>
+        <td>{{ a.purchase_date }}</td>
+        <td>
+            {% if a.classes %}
+                <ul>
+                    {% for c in a.classes %}
+                        <li>
+                            {{ c.class_type }} –
+                            {{ c.num_rows }} rows × {{ c.num_columns }} columns
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                No classes defined
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+<a href="/admin_add_aircraft1">Add New Aircraft</a>
+
+{% endblock %}

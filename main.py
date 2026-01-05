@@ -1,5 +1,5 @@
 
-from flask import Flask, redirect, render_template, request, session
+from flask import Flask, redirect, render_template, request, session, url_for
 from flask_session import Session
 from datetime import timedelta, date
 from utils import *
@@ -542,10 +542,76 @@ def flight_added_success():
     # דף אישור לאחר הוספת טיסה חדשה [cite: 265, 266]
     pass
 
-@app.route('/flight_board', methods=['GET', 'POST'])
+@app.route('/flight_board', methods=['GET', 'POST'])    #rona
 def flight_board():
     # לוח הטיסות למנהל כולל סינונים [cite: 179, 276, 289]
     pass
+
+
+@app.route('/aircraft_management')  #rona
+def aircraft_management():
+    aircrafts = get_all_aircrafts()
+    return render_template("manage_aircrafts.html", aircrafts=aircrafts)
+
+@app.route("/admin_add_aircraft1", methods=["GET", "POST"])
+def admin_add_aircraft():
+    if request.method == "POST":
+        session["new_aircraft"] = {
+            "manufacturer": request.form["manufacturer"],
+            "size": request.form["size"]
+        }
+        return redirect(url_for("admin_add_aircraft2"))
+
+    return render_template("add_aircraft1.html")
+
+
+
+@app.route("/admin_add_aircraft2", methods=["GET", "POST"])
+def admin_add_aircraft2():
+    if "new_aircraft" not in session:
+        return redirect(url_for("admin_add_aircraft"))
+
+    if request.method == "POST":
+        session["new_aircraft"]["classes"] = {
+            "economy": {
+                "rows": request.form["economy_rows"],
+                "cols": request.form["economy_cols"]
+            }
+        }
+
+        if session["new_aircraft"]["size"] == "Large":
+            session["new_aircraft"]["classes"]["business"] = {
+                "rows": request.form["business_rows"],
+                "cols": request.form["business_cols"]
+            }
+
+        return redirect(url_for("added_aircraft"))
+
+    return render_template("add_aircraft2.html")
+
+
+@app.route("/added_aircraft")
+def added_aircraft():
+    data = session.get("new_aircraft")
+    if not data:
+        return redirect(url_for("admin_add_aircraft"))
+
+    aircraft_id = add_aircraft(
+        data["manufacturer"],
+        data["size"]
+    )
+
+    for class_type, c in data["classes"].items():
+        add_class(
+            aircraft_id,
+            class_type,
+            c["rows"],
+            c["cols"]
+        )
+
+    session.pop("new_aircraft")
+    return render_template("aircraft_added.html")
+
 
 @app.route('/admin_cancel_flight', methods=['POST'])
 def admin_cancel_flight():
