@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Management</title>
+</head>
+<body>
+    <h1>Staff Management</h1>
+
+    <p>
+        <a href="/add_staff" style="background-color: #4CAF50; color: white; padding: 10px; text-decoration: none; border-radius: 5px;">
+            + Add New Staff Member
+        </a>
+    </p>
+
+    <div>
+        <a href="/staff_management?show=all">[ Show All Staff ]</a> |
+        <a href="/staff_management?show=Pilot">[ Show Pilots Only ]</a> |
+        <a href="/staff_management?show=Attendant">[ Show Attendants Only ]</a>
+    </div>
+
+    <br>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>First Name (Hebrew)</th>
+                <th>Last Name (Hebrew)</th>
+                <th>Role</th>
+                <th>Phone</th>
+                <th>City</th>
+                <th>Street</th>
+                <th>House Num</th>
+                <th>Start Date</th>
+                <th>Long Flight Certified</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in staff_members %}
+            <tr>
+                <td>{{ member[0] }}</td> <td>{{ member[1] }}</td> <td>{{ member[2] }}</td> <td>{{ member[9] }}</td> <td>{{ member[3] }}</td> <td>{{ member[4] }}</td> <td>{{ member[5] }}</td> <td>{{ member[6] }}</td> <td>{{ member[7] }}</td> <td>{{ 'Yes' if member[8] == 1 else 'No' }}</td> </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+<a href="/admin_homepage">Back To Homepage </a>
+</body>
+</html>

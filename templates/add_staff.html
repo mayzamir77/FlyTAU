@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Staff</title>
+</head>
+<body>
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+{% endif %}
+<h3>Add New Staff Member</h3>
+    <form action="/add_staff" method="POST">
+
+      <label>ID:</label>
+        <input type="text" name="id"
+               maxlength="50" required>
+        <br><br>
+
+        <label>First Name (Hebrew):</label>
+        <input type="text" name="f_name"
+               pattern="[א-ת\s]+"
+               title="Please enter Hebrew letters only"
+               maxlength="50" required>
+        <br><br>
+
+        <label>Last Name (Hebrew):</label>
+        <input type="text" name="l_name"
+               pattern="[א-ת\s]+"
+               title="Please enter Hebrew letters only"
+               maxlength="50" required>
+        <br><br>
+
+        <label>Select Role:</label>
+        <select name="new_role" required>
+            <option value="" disabled selected>Select role...</option>
+            <option value="Pilot">Pilot</option>
+            <option value="Flight Attendant">Flight Attendant</option>
+        </select>
+        <br><br>
+
+        <label>Phone:</label>
+        <input type="text" name="phone"
+               pattern="[0-9]+"
+               title="Please enter numbers only"
+               maxlength="15" required>
+        <br><br>
+
+        <label>City (English):</label>
+        <input type="text" name="city"
+               pattern="[A-Za-z\s]+"
+               title="Please enter English letters only" required>
+        <br><br>
+
+        <label>Street (English):</label>
+        <input type="text" name="street"
+               pattern="[A-Za-z\s]+"
+               title="Please enter English letters only" required>
+        <br><br>
+
+        <label>House Number:</label>
+        <input type="number" name="house_num" min="1" required>
+        <br><br>
+
+        <label>Start Date:</label>
+        <input type="date" name="start_date" value="{{ today }}" required>
+        <br><br>
+
+        <label>Certified for Long Flights?</label>
+        <input type="checkbox" name="is_certified" value="1">
+        <br><br>
+
+        <button type="submit">Save New Employee</button>
+    </form>
+</body>
+</html>
