@@ -595,10 +595,6 @@ def flight_added_success():
     # דף אישור לאחר הוספת טיסה חדשה [cite: 265, 266]
     pass
 
-@app.route('/flight_board', methods=['GET', 'POST'])    #rona
-def flight_board():
-    # לוח הטיסות למנהל כולל סינונים [cite: 179, 276, 289]
-    pass
 
 @app.route('/flight_board', methods=['GET'])
 def show_flight_board():
