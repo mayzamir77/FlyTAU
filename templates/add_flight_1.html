@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>add flight 1</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}add flight 1{% endblock %}
+
+{% block content %}
+
 <hr>
 {% if error %}
     <p style="color:red;">{{ error }}</p>
@@ -42,5 +41,4 @@
         <input type="submit" value="Submit">
     </form>
 
-</body>
-</html>
+{% endblock %}

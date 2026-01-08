@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Select Crew and Prices</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Select Crew and Prices{% endblock %}
+
+{% block content %}
 
 <h2>Flight Details</h2>
 <p><strong>Date:</strong> {{ flight_date }}</p>
@@ -99,5 +97,4 @@
 <br>
 <a href="/add_flight_step1">Back to Step 1</a>
 
-</body>
-</html>
+{% endblock %}

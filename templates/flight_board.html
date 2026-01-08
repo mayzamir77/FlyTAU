@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Flight Board</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Flight Board{% endblock %}
+
+{% block content %}
+
     {% if user_type == 'manager' %}
         <h1>Flight Board - Management View</h1>
         <form action="/flight_board" method="GET">
@@ -59,5 +58,4 @@
     <br>
     <a href="/">Back to Menu</a>
 
-</body>
-</html>
+{% endblock %}
