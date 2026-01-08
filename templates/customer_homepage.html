@@ -6,19 +6,21 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}">
 {% endblock %}
 
-{% block content %}
-
-<!-- TOP BUTTONS (ONLY CUSTOMER HOMEPAGE) -->
-<div class="homepage-top-buttons">
-    <div class="home-left">
-        <a href="/my_orders">My Orders</a>
-    </div>
-
-    <div class="home-right">
-        <a href="/profile_details">Profile Details</a>
-        <a href="/logout">Logout</a>
-    </div>
+{# ===== HEADER BUTTONS (CLIENT) ===== #}
+{% block header_left %}
+<div class="header-left">
+    <a href="/my_orders">My Orders</a>
 </div>
+{% endblock %}
+
+{% block header_right %}
+<div class="header-right">
+    <a href="/profile_details">Profile Details</a>
+    <a href="/logout">Logout</a>
+</div>
+{% endblock %}
+
+{% block content %}
 
 <!-- HERO -->
 <div class="homepage-hero">
@@ -75,7 +77,7 @@
 
             <input type="submit" value="Search Flights">
 
-            <!-- FLIGHT BOARD LINK (SAME AS HOMEPAGE) -->
+            <!-- FLIGHT BOARD LINK -->
             <div class="search-footer-link">
                 <a href="/flight_board">
                     Not sure where to fly? View our Flight Board
