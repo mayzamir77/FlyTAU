@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Available Aircraft And Staff</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Available Aircraft And Staff{% endblock %}
+
+{% block content %}
 
 <h2>Flight Details</h2>
 <p><strong>Date:</strong> {{ flight_date }}</p>
@@ -52,5 +50,4 @@
 <br>
 <a href="/">Back to Home</a>
 
-</body>
-</html>
+{% endblock %}

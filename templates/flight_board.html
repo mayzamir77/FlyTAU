@@ -1,12 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flight Board</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
-</head>
-<body>
+
+{% extends "base.html" %}
+
+{% block title %}Flight Board{% endblock %}
+
+{% block content %}
+
     <div class="container">
         {% if user_type == 'manager' %}
             <h1>Flight Board - Management View</h1>
@@ -26,6 +24,7 @@
         {% else %}
             <h1>Available Flights</h1>
         {% endif %}
+
 
         {% if flights %}
             <table class="flight-table">
@@ -64,9 +63,10 @@
             <p class="no-flights">No active flights available at the moment.</p>
         {% endif %}
 
+
+
         <div class="footer-links">
             <a href="/" class="back-link">Back to Menu</a>
         </div>
     </div>
-</body>
-</html>
+{% endblock %}
