@@ -803,7 +803,9 @@ def show_flight_board():
     Displays the flight board based on user permissions.
     - Managers can view all flights or filter by status.
     - Other users can only see 'Active' flights.
+    - Automatically updates flights to 'Completed' if they have already landed.
     """
+    update_completed_flights()
     user_type = session.get('user_type')
 
     # Determine status filter based on user role
