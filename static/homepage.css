@@ -9,76 +9,73 @@ body {
    HERO SECTION
    ========================= */
 .homepage-hero {
+    position: relative; /* חשוב לעיגון הכפתורים */
     background: white;
-    padding: 45px 40px;
+    padding: 16px 20px;
     border-radius: 18px;
-    margin-bottom: 40px;
+    margin: 0 auto 40px auto;
+    max-width: 1100px;
     text-align: center;
     box-shadow: 0 8px 25px rgba(0,0,0,0.06);
 }
 
 .homepage-hero h1 {
     font-size: 36px;
-    margin-bottom: 22px;
     color: #0b3c5d;
-}
-
-.homepage-nav {
-    display: flex;
-    justify-content: center;
-    gap: 14px;
-}
-
-.homepage-nav a {
-    background: white;
-    color: #0b3c5d;
-    text-decoration: none;
-    padding: 10px 18px;
-    border-radius: 10px;
-    border: 1px solid #d6e2ea;
-    font-weight: 600;
-}
-
-.homepage-nav a:hover {
-    background-color: #f0f6fa;
-    border-color: #1e6fa3;
+    margin: 0;
 }
 
 /* =========================
-   TABS
+   TOP BUTTONS (HOMEPAGE ONLY)
    ========================= */
-.search-tabs {
+.homepage-top-buttons {
+    position: absolute;
+    top: -50px;
+    left: 0;
+    right: 0;
+
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 30px;
+
+    display: flex;
+    justify-content: space-between;
+    z-index: 50;
+}
+
+.home-left,
+.home-right {
+    display: flex;
+    gap: 12px;
+}
+
+.homepage-top-buttons a {
+    background-color: #0b3c5d;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    border: none;
+
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.homepage-top-buttons a:hover {
+    background-color: #08324f;
+    transform: translateY(-1px);
+}
+
+/* =========================
+   MAIN HOMEPAGE LAYOUT
+   ========================= */
+.homepage-main {
+    display: grid;
+    grid-template-columns: 2.2fr 1fr;
+    gap: 32px;
     max-width: 1200px;
     margin: 0 auto 60px;
-}
-
-.tab-buttons {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 18px;
-}
-
-.tab-btn {
-    padding: 12px 22px;
-    border-radius: 12px 12px 0 0;
-    border: 1px solid #cfd9e0;
-    background: #eaf1f6;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.tab-btn.active {
-    background: white;
-    border-bottom: none;
-    color: #1e6fa3;
-}
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
+    align-items: start;
 }
 
 /* =========================
@@ -129,20 +126,6 @@ body {
     font-size: 15px;
 }
 
-/* ✈️ PLANE ICON BETWEEN FROM & TO */
-.form-field.from {
-    position: relative;
-}
-
-.form-field.from::after {
-    content: "✈️";
-    position: absolute;
-    right: -22px;
-    bottom: 12px;
-    font-size: 18px;
-    color: #1e6fa3;
-}
-
 /* SUBMIT */
 .search-card input[type="submit"] {
     grid-column: span 4;
@@ -162,6 +145,26 @@ body {
 }
 
 /* =========================
+   SEARCH FOOTER LINK
+   ========================= */
+.search-footer-link {
+    text-align: center;
+    margin-top: 16px;
+}
+
+.search-footer-link a {
+    color: #1e6fa3;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 15px;
+    white-space: nowrap;
+}
+
+.search-footer-link a:hover {
+    text-decoration: underline;
+}
+
+/* =========================
    MANAGE BOOKING
    ========================= */
 .manage-card {
@@ -170,12 +173,13 @@ body {
     border-radius: 0 18px 18px 18px;
     box-shadow: 0 8px 22px rgba(0,0,0,0.08);
     border-top: 5px solid #1e6fa3;
-    max-width: 600px;
+    height: fit-content;
 }
 
 .manage-card h3 {
     margin-bottom: 18px;
     color: #0b3c5d;
+    font-size: 20px;
 }
 
 .manage-card form {
@@ -198,4 +202,8 @@ body {
     border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
+}
+
+.manage-card input[type="submit"]:hover {
+    background-color: #164f78;
 }

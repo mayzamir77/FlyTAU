@@ -6,99 +6,111 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}">
 {% endblock %}
 
+{% block header_left %}
+<a href="/adminlogin">Admin Login</a>
+{% endblock %}
+
+{% block header_right %}
+<a href="/login">Login</a>
+<a href="/signup">Sign Up</a>
+{% endblock %}
+
 {% block content %}
 
+<!-- HERO -->
 <div class="homepage-hero">
     <h1>Welcome to FLYTAU</h1>
-    <nav class="homepage-nav">
-        <a href="/login">Login</a>
-        <a href="/signup">Sign Up</a>
-        <a href="/adminlogin">Admin Login</a>
-        <a href="/flight_board">Flight Board</a>
-    </nav>
 </div>
 
 {% if error %}
     <p style="color:red;">{{ error }}</p>
 {% endif %}
 
-<div class="search-card">
-    <h3>Search for a Flight</h3>
+<!-- MAIN CONTENT: SEARCH + MANAGE -->
+<div class="homepage-main">
 
-    <form action="/search_flights" method="POST">
+    <!-- SEARCH FLIGHT -->
+    <div class="search-card">
+        <h3>Search for a Flight</h3>
 
-        <div class="form-field">
-            <label>Date:</label>
-            <input type="date" name="flight_date" min="{{ today }}" required>
-        </div>
+        <form action="/search_flights" method="POST">
 
-        <div class="form-field">
-            <label>From:</label>
-            <select name="origin">
-                {% for origin in origins %}
-                    <option value="{{ origin[0] }}">{{ origin[0] }}</option>
-                {% endfor %}
-            </select>
-        </div>
+            <div class="form-field">
+                <label>Date:</label>
+                <input type="date" name="flight_date" min="{{ today }}" required>
+            </div>
 
-        <div class="form-field">
-            <label>To:</label>
-            <select name="destination">
-                {% for dest in destinations %}
-                    <option value="{{ dest[0] }}">{{ dest[0] }}</option>
-                {% endfor %}
-            </select>
-        </div>
+            <div class="form-field from">
+                <label>From:</label>
+                <select name="origin">
+                    {% for origin in origins %}
+                        <option value="{{ origin[0] }}">{{ origin[0] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <div class="form-field">
-            <label>Passengers:</label>
-            <input
-                type="number"
-                name="num_seats"
-                min="1"
-                max="6"
-                value="1"
-                required
-            >
-        </div>
+            <div class="form-field">
+                <label>To:</label>
+                <select name="destination">
+                    {% for dest in destinations %}
+                        <option value="{{ dest[0] }}">{{ dest[0] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <input type="submit" value="Search Flights">
-    </form>
-</div>
+            <div class="form-field">
+                <label>Passengers:</label>
+                <input
+                    type="number"
+                    name="num_seats"
+                    min="1"
+                    max="6"
+                    value="1"
+                    required
+                >
+            </div>
 
-{% if manage_booking_error %}
-    <p style="color:red;">{{ manage_booking_error }}</p>
-{% endif %}
+            <input type="submit" value="Search Flights">
 
-<div class="manage-card">
-    <h3>Manage my Booking</h3>
+            <div class="search-footer-link">
+                <a href="/flight_board">
+                    Not sure where to fly? View our Flight Board
+                </a>
+            </div>
 
-    <form action="/manage_booking" method="POST">
+        </form>
+    </div>
 
-        <div class="form-field">
-            <label>Booking ID</label>
-            <input
-                placeholder="Booking ID"
-                autocomplete="off"
-                type="text"
-                name="booking_ID"
-                required
-            >
-        </div>
+    <!-- MANAGE BOOKING -->
+    <div class="manage-card">
+        <h3>Manage my Booking</h3>
 
-        <div class="form-field">
-            <label>Email</label>
-            <input
-                placeholder="Email"
-                autocomplete="off"
-                type="email"
-                name="booking_email"
-                required
-            >
-        </div>
+        <form action="/manage_booking" method="POST">
 
-        <input type="submit" value="To my Booking">
-    </form>
+            <div class="form-field">
+                <label>Booking ID</label>
+                <input
+                    type="text"
+                    name="booking_ID"
+                    autocomplete="off"
+                    required
+                >
+            </div>
+
+            <div class="form-field">
+                <label>Email</label>
+                <input
+                    type="email"
+                    name="booking_email"
+                    autocomplete="off"
+                    required
+                >
+            </div>
+
+            <input type="submit" value="To my Booking">
+        </form>
+    </div>
+
 </div>
 
 {% endblock %}
