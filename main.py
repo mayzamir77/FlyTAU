@@ -654,8 +654,8 @@ def admin_add_aircraft2():
 
         return redirect(url_for("added_aircraft"))
 
-    return render_template("add_aircraft2.html")
-
+    return render_template("add_aircraft2.html",
+        aircraft_size=session["new_aircraft"]["size"])
 
 @app.route("/added_aircraft")
 def added_aircraft():

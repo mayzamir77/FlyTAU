@@ -7,16 +7,15 @@
 <h2>Define Aircraft Classes</h2>
 
 <form method="POST">
-    <input type="hidden" name="size" value="{{ request.args.get('size') }}">
 
     <h3>Economy</h3>
     Rows: <input type="number" name="economy_rows" required><br>
     Columns: <input type="number" name="economy_cols" required><br><br>
 
-    {% if request.form.get("size") == "Large" %}
-    <h3>Business</h3>
-    Rows: <input type="number" name="business_rows"><br>
-    Columns: <input type="number" name="business_cols"><br><br>
+    {% if aircraft_size == "Large" %}
+        <h3>Business</h3>
+        Rows: <input type="number" name="business_rows" required><br>
+        Columns: <input type="number" name="business_cols" required><br><br>
     {% endif %}
 
     <input type="submit" value="Save Aircraft">

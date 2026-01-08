@@ -943,7 +943,8 @@ def cancel_booking_in_db(booking_id,cancellation_fee):    #updating the db after
             """
             UPDATE booking
             SET booking_status = 'Customer Cancellation',
-                payment = %s
+                payment = %s,
+                cancellation_datetime = CURRENT_DATE
             WHERE booking_id = %s
             """,
             (cancellation_fee,booking_id)
