@@ -1,28 +1,59 @@
 {% extends "base.html" %}
 
-{% block title %}add_aircraft2{% endblock %}
+{% block title %}Define Aircraft Classes{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-<h2>Define Aircraft Classes</h2>
+<div class="container">
+    <h2>Step 2: Define Cabin Layout</h2>
+    <p style="text-align: center; color: #7f8c8d; margin-bottom: 30px;">
+        Set the number of rows and columns for the <strong>{{ aircraft_size }}</strong> aircraft.
+    </p>
 
-<form method="POST">
+    <div style="max-width: 700px; margin: 0 auto;">
+        <form method="POST">
 
-    <h3>Economy</h3>
-    Rows: <input type="number" name="economy_rows" required><br>
-    Columns: <input type="number" name="economy_cols" required><br><br>
+            <fieldset style="border-color: #1a73e8;">
+                <legend><h3 style="color: #1a73e8;">Economy Class Layout</h3></legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Number of Rows</label>
+                        <input type="number" name="economy_rows" placeholder="e.g. 20" required min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Seats per Row (Columns)</label>
+                        <input type="number" name="economy_cols" placeholder="e.g. 6" required min="1">
+                    </div>
+                </div>
+            </fieldset>
 
-    {% if aircraft_size == "Large" %}
-        <h3>Business</h3>
-        Rows: <input type="number" name="business_rows" required><br>
-        Columns: <input type="number" name="business_cols" required><br><br>
-    {% endif %}
+            {% if aircraft_size == "Large" %}
+                <fieldset style="margin-top: 30px; border-color: #1a73e8;">
+                    <legend><h3 style="color: #1a73e8;">Business Class Layout</h3></legend>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Number of Rows</label>
+                            <input type="number" name="business_rows" placeholder="e.g. 5" required min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Seats per Row (Columns)</label>
+                            <input type="number" name="business_cols" placeholder="e.g. 4" required min="1">
+                        </div>
+                    </div>
+                </fieldset>
+            {% endif %}
 
-    <input type="submit" value="Save Aircraft">
-</form>
+            <div style="margin-top: 40px; text-align: center;">
+                <input type="submit" value="Save Aircraft Configuration" class="btn-large">
+            </div>
+        </form>
 
-<a href="{{ url_for('admin_add_aircraft') }}">
-    <button type="button">Back</button>
-</a>
-
+        <div style="text-align: center; margin-top: 20px; padding-bottom: 50px;">
+            <a href="{{ url_for('admin_add_aircraft') }}" class="back-link">
+                ← Back to Aircraft Selection
+            </a>
+        </div>
+    </div>
+</div>
 {% endblock %}

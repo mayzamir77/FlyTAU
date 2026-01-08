@@ -1,45 +1,63 @@
 {% extends "base.html" %}
 
-{% block title %}manage aircrafts{% endblock %}
+{% block title %}Manage Aircraft Fleet{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-<h2>FlyTAU's Aircrafts</h2>
+<div class="container">
+    <h2 style="margin-bottom: 10px;">FlyTAU's Aircraft Fleet</h2>
+    <p style="text-align: center; color: #7f8c8d; margin-bottom: 30px;">View and manage all aircraft in the corporate inventory.</p>
 
-<table border="1">
-    <tr>
-        <th>Aircraft ID</th>
-        <th>Manufacturer</th>
-        <th>Size</th>
-        <th>Purchase Date</th>
-        <th>Classes</th>
-    </tr>
+    <div style="margin-bottom: 20px; text-align: right;">
+        <a href="/admin_add_aircraft1" class="btn-filter" style="text-decoration: none; display: inline-block;">
+            + Add New Aircraft
+        </a>
+    </div>
 
-    {% for a in aircrafts %}
-    <tr>
-        <td>{{ a.aircraft_id }}</td>
-        <td>{{ a.manufacturer }}</td>
-        <td>{{ a.size }}</td>
-        <td>{{ a.purchase_date }}</td>
-        <td>
-            {% if a.classes %}
-                <ul>
-                    {% for c in a.classes %}
-                        <li>
-                            {{ c.class_type }} –
-                            {{ c.num_rows }} rows × {{ c.num_columns }} columns
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                No classes defined
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+    <table class="flight-table">
+        <thead>
+            <tr>
+                <th>Aircraft ID</th>
+                <th>Manufacturer</th>
+                <th>Size</th>
+                <th>Purchase Date</th>
+                <th>Cabin Configuration</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in aircrafts %}
+            <tr>
+                <td style="font-weight: bold; color: #1a73e8;">{{ a.aircraft_id }}</td>
+                <td>{{ a.manufacturer }}</td>
+                <td>
+                    <span class="status-badge" style="background-color: #f1f5f9; color: #475569;">
+                        {{ a.size }}
+                    </span>
+                </td>
+                <td>{{ a.purchase_date }}</td>
+                <td>
+                    {% if a.classes %}
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            {% for c in a.classes %}
+                                <div style="font-size: 0.85rem; background: #eef2f7; padding: 5px 10px; border-radius: 6px; border-right: 3px solid #1a73e8;">
+                                    <strong>{{ c.class_type }}:</strong>
+                                    {{ c.num_rows }} Rows × {{ c.num_columns }} Cols
+                                    <span style="color: #7f8c8d; font-size: 0.75rem;">({{ c.num_rows * c.num_columns }} seats)</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span style="color: #d73a49; font-style: italic;">No classes defined</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-<br>
-<a href="/admin_add_aircraft1">Add New Aircraft</a>
-
+    <div style="text-align: center; margin-top: 30px; padding-bottom: 50px;">
+        <a href="/" class="back-link">← Back to Dashboard</a>
+    </div>
+</div>
 {% endblock %}

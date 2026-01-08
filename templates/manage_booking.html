@@ -3,56 +3,93 @@
 {% block title %}Manage Booking{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-<h2>Manage Booking</h2>
+<div class="container">
+    <h2 style="text-align: center; margin-bottom: 30px;">Manage Your Booking</h2>
 
-{% if error %}
-  <p style="color:red;">{{ error }}</p>
-{% endif %}
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
 
-{% if booking %}
-  <h3>Booking Details</h3>
-  <p><strong>Booking ID:</strong> {{ booking.booking_id }}</p>
-  <p><strong>Email:</strong> {{ booking.customer_email }}</p>
-  <p><strong>Flight ID:</strong> {{ booking.flight_id }}</p>
-  <p><strong>From:</strong> {{ booking.origin }}</p>
-  <p><strong>To:</strong> {{ booking.destination }}</p>
-  <p><strong>Departure Time:</strong> {{ booking.departure_date }} {{ booking.departure_time }}</p>
-  <p><strong>Arrival Time:</strong> {{ booking.arrival_date }} {{ booking.arrival_time }}</p>
-  <p><strong>Payment:</strong> {{ booking.payment }} USD</p>
-{% else %}
-  <p>No booking to show yet.</p>
-{% endif %}
+    {% if booking %}
+    <div class="summary-card" style="max-width: 800px; margin-bottom: 40px;">
+        <div class="summary-header">
+            <h3>Booking Details #{{ booking.booking_id }}</h3>
+        </div>
 
-<hr>
+        <div class="summary-section">
+            <div class="summary-data-row">
+                <span class="summary-label">Customer Email:</span>
+                <span class="summary-value">{{ booking.customer_email }}</span>
+            </div>
+            <div class="summary-data-row">
+                <span class="summary-label">Flight Route:</span>
+                <span class="summary-value" style="font-weight: bold; color: #1a73e8;">
+                    {{ booking.origin }} ✈ {{ booking.destination }}
+                </span>
+            </div>
+        </div>
 
-<h3>Cancel Booking</h3>
+        <div class="summary-section">
+            <div class="summary-data-row">
+                <span class="summary-label">Departure:</span>
+                <span class="summary-value">{{ booking.departure_date }} at {{ booking.departure_time }}</span>
+            </div>
+            <div class="summary-data-row">
+                <span class="summary-label">Arrival:</span>
+                <span class="summary-value">{{ booking.arrival_date }} at {{ booking.arrival_time }}</span>
+            </div>
+        </div>
 
-{% if can_cancel %}
-    <p>
-        Cancellation fee: {{ cancellation_fee }} USD
-    </p>
+        <div class="total-payment-bar">
+            <span class="summary-label">Total Payment:</span>
+            <span class="price" style="font-size: 1.5rem;">${{ booking.payment }}</span>
+        </div>
+    </div>
 
-    <form method="POST"
-          action="/cancel_booking_request"
-          onsubmit="return confirm('Are you sure you want to cancel this booking? A cancellation fee of {{ cancellation_fee }} will be charged.');">   <!--JS-->
+    <div class="summary-card" style="max-width: 800px; border: 1px solid #ffeef0;">
+        <div class="summary-header" style="background: #d73a49;">
+            <h3>Cancellation Policy</h3>
+        </div>
 
-        <input type="hidden" name="booking_id" value="{{ booking.booking_id }}">
-        <input type="hidden" name="booking_email" value="{{ booking.customer_email }}">
+        <div class="summary-section" style="text-align: center; padding: 30px;">
+            {% if can_cancel %}
+                <p style="font-size: 1.1rem; margin-bottom: 20px;">
+                    You can still cancel this booking. <br>
+                    <strong>Cancellation fee: ${{ cancellation_fee }}</strong>
+                </p>
 
-        <button type="submit">Cancel Booking</button>
-    </form>
-{% else %}
-    <p>
-        This booking cannot be cancelled less than 36 hours before departure.
-    </p>
+                <form method="POST" action="/cancel_booking_request"
+                      onsubmit="return confirm('Are you sure you want to cancel this booking? A fee of ${{ cancellation_fee }} will be charged.');">
+                    <input type="hidden" name="booking_id" value="{{ booking.booking_id }}">
+                    <input type="hidden" name="booking_email" value="{{ booking.customer_email }}">
 
-    <button type="button" disabled>
-        Cancel Booking
-    </button>
-{% endif %}
+                    <button type="submit" class="btn-large" style="background-color: #d73a49; width: auto; padding: 12px 40px;">
+                        Cancel My Booking
+                    </button>
+                </form>
+            {% else %}
+                <div style="color: #d73a49; font-weight: bold;">
+                    <p>Cancellation is no longer available for this flight.</p>
+                    <p style="font-size: 0.9rem; font-weight: normal; color: #7f8c8d;">
+                        Bookings cannot be cancelled less than 36 hours before departure.
+                    </p>
+                    <button type="button" class="btn-large" disabled style="background-color: #e2e8f0; color: #94a3b8; cursor: not-allowed; width: auto; padding: 12px 40px;">
+                        Cancellation Locked
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+        <div class="summary-card" style="padding: 40px; text-align: center;">
+            <p>No booking details found. Please check your order ID.</p>
+        </div>
+    {% endif %}
 
-<a href="{{ back_url }}">Back</a>
-
+    <div style="text-align: center; margin-top: 30px; padding-bottom: 50px;">
+        <a href="{{ back_url }}" class="back-link">← Back to previous page</a>
+    </div>
+</div>
 {% endblock %}
-
