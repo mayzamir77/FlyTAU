@@ -1,52 +1,61 @@
 {% extends "base.html" %}
 
-{% block title %}Available Flights{% endblock %}
-
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-<h2>Available Flights for {{ requested_seats }} Passengers</h2>
-<form action="/select_seats" method="POST">
-    <input type="hidden" name="num_seats" value="{{ requested_seats }}">
-<table border="1" cellpadding="8" cellspacing="0">
-    <thead>
-        <tr>
-            <th>Select</th>
-            <th>Flight ID</th>
-            <th>Aircraft</th>
-            <th>Class</th>
-            <th>Departure date (From: {{ flights[0].origin if flights else '' }})</th>
-            <th>Departure time</th>
-            <th>Arrival date (To: {{ flights[0].destination if flights else '' }})</th>
-            <th>Arrival time</th>
-            <th>Price Per Seat</th>
-            <th>Total Price</th>
-        </tr>
-</thead>
+<div class="container">
+    <h2>Available Flights ({{ requested_seats }} Passengers)</h2>
+
+    <form action="/select_seats" method="POST">
+        <input type="hidden" name="num_seats" value="{{ requested_seats }}">
+
+        <table class="booking-table">
             <tbody>
                 {% for flight in flights %}
                 <tr>
-                    <td>
-                        <input type="radio" name="selected_option" value="{{ flight.id }},{{ flight.class_type }},{{flight.aircraft_id}}" required>
+                    <td> <div class="card-main-content">
+                            <div class="flight-timing">
+                                <input type="radio" name="selected_option" value="{{ flight.id }},{{ flight.class_type }},{{flight.aircraft_id}}" required>
+
+                                <div class="time-block">
+                                    <span class="time">{{ flight.departure_time }}</span>
+                                    <span class="airport-code">{{ flight.origin }}</span>
+                                    <small>{{ flight.departure_date }}</small>
+                                </div>
+
+                                <div class="flight-duration">
+                                    <div class="duration-text">Direct</div>
+                                    <div class="arrow-line"></div>
+                                    <div class="duration-text">2h 45m</div> </div>
+
+                                <div class="time-block">
+                                    <span class="time">{{ flight.arrival_time }}</span>
+                                    <span class="airport-code">{{ flight.destination }}</span>
+                                    <small>{{ flight.arrival_date }}</small>
+                                </div>
+                            </div>
+
+                            <div class="flight-price-section">
+                                <div class="price-tag">${{ flight.price * requested_seats|int }}</div>
+                                <small style="display:block; color:#95a5a6;">Total Price</small>
+                            </div>
+                        </div>
+
+                        <div class="info-footer">
+                            <span><strong>Class:</strong> {{ flight.class_type }}</span>
+                            <span><strong>Flight ID:</strong> #{{ flight.id }}</span>
+                            <span><strong>Aircraft:</strong> {{ flight.aircraft_id }}</span>
+                            <span><strong>Price per seat:</strong> ${{ flight.price }}</span>
+                        </div>
                     </td>
-                    <td>{{flight.id}}</td>
-                    <td>{{flight.aircraft_id}}</td>
-                    <td>{{flight.class_type}}</td>
-                    <td>{{flight.departure_date}}</td>
-                    <td>{{flight.departure_time}}</td>
-                    <td>{{flight.arrival_date}}</td>
-                    <td>{{flight.arrival_time}}</td>
-                    <td>{{flight.price}} USD</td>
-                    <td>${{ flight.price * requested_seats|int }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
-        <br>
-        <input type="submit" value="Continue to Seat Selection">
+        <div style="text-align: center; margin-top: 20px;">
+            <button type="submit" class="btn-filter">Continue to Seat Selection</button>
+        </div>
     </form>
-
-    <br>
-    <a href="/">Back to Search</a>
-
+</div>
 {% endblock %}

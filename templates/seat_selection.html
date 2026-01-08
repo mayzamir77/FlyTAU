@@ -3,9 +3,26 @@
 {% block title %}Seat Selection{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-    <h2>Seat Selection for {{ flight_id }} ({{ class_type }})</h2>
-    <h3>Please select exactly {{ num_seats }} seats.</h3>
+<div class="container" style="text-align: center;">
+    <h2>Seat Selection for Flight {{ flight_id }}</h2>
+    <div style="margin-bottom: 15px;">
+        <span class="status-badge status-active">{{ class_type }} Class</span>
+    </div>
+    <h3 style="margin-bottom: 10px;">Please select exactly <strong>{{ num_seats }}</strong> seats.</h3>
+
+    <div style="display: flex; justify-content: center; gap: 25px; margin-bottom: 30px; font-size: 0.9rem; color: #555; font-weight: 500;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 18px; height: 18px; background: #1a73e8; border-radius: 4px; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);"></div> Available
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 18px; height: 18px; background: #27ae60; border-radius: 4px; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);"></div> Selected
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 18px; height: 18px; background: #e2e8f0; border-radius: 4px;"></div> Occupied
+        </div>
+    </div>
 
     {% if error %}
         <div class="error">{{ error }}</div>
@@ -13,30 +30,48 @@
 
     <form action="/validate_seats" method="POST">
 
-        <table border="1" cellpadding="10">
-            {% for r in range(layout[2],  layout[2]+layout[0]) %}
-            <tr>
-                {% for c_idx in range(layout[1]) %}
-                    {% set col_letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[c_idx] %}
-                    <td>
-                        {% if (r, col_letter) in vacant_set %}
-                            <div class="available">
-                                <label for="seat_{{r}}_{{col_letter}}">{{ r }}{{ col_letter }}</label><br>
-                                <input type="checkbox" name="selected_seats" value="{{ r }}{{ col_letter }}" id="seat_{{r}}_{{col_letter}}">
-                            </div>
-                        {% else %}
-                            <div class="occupied">
-                                {{ r }}{{ col_letter }}<br>X
-                            </div>
-                        {% endif %}
-                    </td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </table>
+        <div class="seat-map-wrapper">
+            <table class="seat-map-table">
+                {% for r in range(layout[2], layout[2]+layout[0]) %}
+                <tr>
+                    {% for c_idx in range(layout[1]) %}
+                        {% set col_letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[c_idx] %}
 
-        <br>
-        <input type="submit" value="Continue to Passenger Details">
+                        <td>
+                            {% if (r, col_letter) in vacant_set %}
+                                <label class="seat-label">
+                                    <input type="checkbox" name="selected_seats" value="{{ r }}{{ col_letter }}"
+                                           id="seat_{{r}}_{{col_letter}}" class="seat-checkbox">
+                                    <div class="seat-item available">
+                                        {{ r }}{{ col_letter }}
+                                    </div>
+                                </label>
+                            {% else %}
+                                <div class="seat-item occupied">
+                                    {{ r }}{{ col_letter }}
+                                </div>
+                            {% endif %}
+                        </td>
+
+                        {# Aisle logic: adds a gap in the middle of the aircraft #}
+                        {% if c_idx == (layout[1] // 2) - 1 %}
+                            <td class="aisle"></td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <button type="submit" class="btn-filter" style="font-size: 1.1rem; padding: 15px 45px; border-radius: 50px; text-transform: uppercase; letter-spacing: 1px;">
+                Confirm & Continue
+            </button>
+        </div>
     </form>
 
+    <div style="margin-top: 25px;">
+        <a href="javascript:history.back()" class="back-link">← Return to Flights</a>
+    </div>
+</div>
 {% endblock %}
