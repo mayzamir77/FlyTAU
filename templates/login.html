@@ -3,10 +3,9 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-
 <div class="container">
 
-    <h1>Login</h1>
+    <h1>Login to FlyTAU</h1>
 
     {% if error %}
         <div class="error">
@@ -14,46 +13,54 @@
         </div>
     {% endif %}
 
-    <form action="/login" method="POST">
+    <div style="max-width: 500px; margin: 0 auto;">
+        <form action="/login" method="POST">
 
-        <fieldset>
-            <legend>
-                <h3>Login Details</h3>
-            </legend>
+            <fieldset>
+                <legend>
+                    <h3>Member Access</h3>
+                </legend>
 
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input
-                    id="email"
-                    type="email"
-                    name="email"
-                    maxlength="100"
-                    autocomplete="off"
-                    value="{{ email }}"
-                    required
-                >
-            </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input
+                        id="email"
+                        type="email"
+                        name="email"
+                        placeholder="example@flytau.com"
+                        value="{{ email }}"
+                        required
+                    >
+                </div>
 
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input
-                    id="password"
-                    type="password"
-                    name="password"
-                    maxlength="100"
-                    required
-                >
-            </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input
+                        id="password"
+                        type="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        required
+                    >
+                </div>
 
-            <input
-                type="submit"
-                value="Login"
-                class="btn-large"
-            >
+                <div style="margin-top: 20px;">
+                    <input
+                        type="submit"
+                        value="Login"
+                        class="btn-large"
+                    >
+                </div>
 
-        </fieldset>
-    </form>
+            </fieldset>
+        </form>
+
+        <div style="text-align: center; margin-top: 15px;">
+            <p style="font-size: 0.9rem; color: #666;">
+                Don't have an account? <a href="/register" class="back-link" style="margin: 0; font-size: 0.9rem;">Register here</a>
+            </p>
+        </div>
+    </div>
 
 </div>
-
 {% endblock %}

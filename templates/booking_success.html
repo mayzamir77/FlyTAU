@@ -1,15 +1,73 @@
 {% extends "base.html" %}
 
-{% block title %}Booking Success{% endblock %}
+{% block title %}Booking Confirmed{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-    <h1>Booking Confirmed!</h1>
-    <p>Thank you. Your order has been placed successfully.</p>
+<div class="container" style="text-align: center;">
 
-    <p><strong>Your Order ID is: #{{ order_id }}</strong></p>
+    <div style="margin-top: 40px; margin-bottom: 30px;">
+        <span style="font-size: 5rem; color: #27ae60;">✔</span>
+        <h1 style="margin-top: 10px; color: #2c3e50;">You're Ready to Fly!</h1>
+        <p style="font-size: 1.2rem; color: #7f8c8d;">Your booking has been confirmed and is now in our system.</p>
+    </div>
 
-    <br>
-    <a href="/">Back to Homepage</a>
+    <div class="summary-card" style="max-width: 650px; margin: 0 auto; border: 1px solid #e0e6ed; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+        <div class="summary-header" style="background: #1a73e8;">
+            <h3>Booking Confirmation</h3>
+        </div>
 
+        <div class="summary-section">
+            <div class="summary-data-row">
+                <span class="summary-label">Order Number:</span>
+                <span class="summary-value" style="background: #f1f5f9; padding: 4px 12px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 1.3rem; letter-spacing: 1px;">
+                    {{ order_id }}
+                </span>
+            </div>
+            <div class="summary-data-row">
+                <span class="summary-label">Passenger Name:</span>
+                <span class="summary-value">{{ first_name }} {{ last_name }}</span>
+            </div>
+        </div>
+
+        <div class="summary-section">
+            <div class="summary-data-row">
+                <span class="summary-label">Flight Number:</span>
+                <span class="summary-value">#{{ flight_id if flight_id else 'Confirmed' }}</span>
+            </div>
+
+            <div class="summary-data-row">
+                <span class="summary-label">Reserved Seats:</span>
+                <span class="summary-value" style="color: #1a73e8; font-weight: bold;">
+                    {% if selected_seats is iterable and selected_seats is not string %}
+                        {{ selected_seats | join(', ') }}
+                    {% else %}
+                        {{ selected_seats }}
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="total-payment-bar" style="background: #fafbfc; border-top: 1px solid #eee;">
+            <p style="margin: 0; color: #27ae60; font-weight: bold; font-size: 1.1rem;">
+                Payment Completed Successfully
+            </p>
+        </div>
+    </div>
+
+    <div style="margin-top: 30px; color: #7f8c8d; font-size: 0.95rem;">
+        <p>A confirmation email with all the details has been sent to your inbox.</p>
+        <p>Please keep your <strong>Order Number ({{ order_id }})</strong> for future reference.</p>
+    </div>
+
+    <div style="margin-top: 40px; padding-bottom: 60px;">
+        <button onclick="window.print()" class="btn-filter" style="background: #ecf0f1; color: #2c3e50; margin-right: 10px; border: 1px solid #bdc3c7;">
+            Print Confirmation
+        </button>
+        <a href="/" class="btn-filter" style="text-decoration: none; display: inline-block;">
+            Back to Homepage
+        </a>
+    </div>
+</div>
 {% endblock %}

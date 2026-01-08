@@ -3,86 +3,88 @@
 {% block title %}My Orders{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-<h2>My Orders</h2>
+<div class="container">
+    <h2 style="margin-bottom: 25px;">My Flight Orders</h2>
 
-<form method="GET" action="/my_orders">
-    <label for="status">Filter by booking status:</label>
+    <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <form method="GET" action="/my_orders" style="display: flex; align-items: center; gap: 15px; justify-content: center;">
+            <label style="margin: 0; font-weight: bold; color: #4a5568;">Filter by status:</label>
+            <select name="status" style="width: auto; min-width: 200px;">
+                <option value="" {% if not selected_status %}selected{% endif %}>Show All Orders</option>
+                <option value="Active" {% if selected_status == 'Active' %}selected{% endif %}>Active</option>
+                <option value="Completed" {% if selected_status == 'Completed' %}selected{% endif %}>Completed</option>
+                <option value="Customer Cancellation" {% if selected_status == 'Customer Cancellation' %}selected{% endif %}>Customer Cancellation</option>
+                <option value="System Cancellation" {% if selected_status == 'System Cancellation' %}selected{% endif %}>System Cancellation</option>
+            </select>
+            <button type="submit" class="btn-filter" style="padding: 10px 25px;">Apply Filter</button>
+        </form>
+    </div>
 
-<select name="status">
-    <option value="" {% if not selected_status %}selected{% endif %}>All</option>
+    {% if orders %}
+    <div style="overflow-x: auto;">
+        <table class="flight-table">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Flight</th>
+                    <th>Route</th>
+                    <th>Departure</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th style="text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td style="font-weight: bold; color: #1a73e8;">#{{ order.booking_id }}</td>
+                    <td>#{{ order.flight_id }}</td>
+                    <td>
+                        <div style="font-weight: 600;">{{ order.origin }} ✈ {{ order.destination }}</div>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.9rem;">{{ order.departure_date }}</div>
+                        <div style="font-size: 0.8rem; color: #7f8c8d;">{{ order.departure_time }}</div>
+                    </td>
+                    <td>
+                        {# התאמת צבע הסטטוס לפי סוג הביטול או ההצלחה #}
+                        {% if order.booking_status == 'Active' %}
+                            <span class="status-badge status-active">Active</span>
+                        {% elif 'Cancellation' in order.booking_status %}
+                            <span class="status-badge status-cancelled">{{ order.booking_status }}</span>
+                        {% else %}
+                            <span class="status-badge" style="background: #e2e8f0; color: #475569;">{{ order.booking_status }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-weight: bold; color: #27ae60;">${{ order.payment }}</td>
+                    <td style="text-align: center;">
+                        {% if order.booking_status == 'Active' %}
+                            <form method="POST" action="/manage_booking">
+                                <input type="hidden" name="booking_ID" value="{{ order.booking_id }}">
+                                <button type="submit" class="btn-filter" style="font-size: 0.8rem; padding: 6px 15px; background-color: #2c3e50;">
+                                    Manage
+                                </button>
+                            </form>
+                        {% else %}
+                            <span style="color: #cbd5e0;">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="summary-card" style="padding: 40px; text-align: center; color: #7f8c8d;">
+        <p style="font-size: 1.2rem;">No orders found matching your filter.</p>
+        <a href="/" class="back-link">Start booking your first flight!</a>
+    </div>
+    {% endif %}
 
-    <option value="Active"
-        {% if selected_status == 'Active' %}selected{% endif %}>
-        Active
-    </option>
-
-    <option value="Completed"
-        {% if selected_status == 'Completed' %}selected{% endif %}>
-        Completed
-    </option>
-
-    <option value="Customer Cancellation"
-        {% if selected_status == 'Customer Cancellation' %}selected{% endif %}>
-        Customer Cancellation
-    </option>
-
-    <option value="System Cancellation"
-        {% if selected_status == 'System Cancellation' %}selected{% endif %}>
-        System Cancellation
-    </option>
-</select>
-
-
-    <button type="submit">Filter</button>
-</form>
-
-<br><br>
-
-{% if orders %}
-<table border="1" cellpadding="5">
-    <tr>
-        <th>Booking ID</th>
-        <th>Flight ID</th>
-        <th>From</th>
-        <th>To</th>
-        <th>Departure</th>
-        <th>Arrival</th>
-        <th>Status</th>
-        <th>Payment</th>
-        <th>Actions</th>
-    </tr>
-
-    {% for order in orders %}
-    <tr>
-        <td>{{ order.booking_id }}</td>
-        <td>{{ order.flight_id }}</td>
-        <td>{{ order.origin }}</td>
-        <td>{{ order.destination }}</td>
-        <td>{{ order.departure_date }} {{ order.departure_time }}</td>
-        <td>{{ order.arrival_date }} {{ order.arrival_time }}</td>
-        <td>{{ order.booking_status }}</td>
-        <td>{{ order.payment }} USD</td>
-
-        <td>
-        {% if order.booking_status == 'Active' %}
-            <form method="POST" action="/manage_booking">
-                <input type="hidden" name="booking_ID" value="{{ order.booking_id }}">
-                <button type="submit">Manage</button>
-            </form>
-        {% else %}
-            —
-        {% endif %}
-    </td>
-</tr>
-{% endfor %}
-</table>
-{% else %}
-<p>No orders to display.</p>
-{% endif %}
-
-<br>
-<a href="/">Back to Home Page</a>
-
+    <div style="text-align: center; margin-top: 40px; padding-bottom: 50px;">
+        <a href="/" class="back-link">← Back to Home Page</a>
+    </div>
+</div>
 {% endblock %}
-

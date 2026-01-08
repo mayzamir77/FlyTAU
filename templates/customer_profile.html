@@ -1,52 +1,88 @@
 {% extends "base.html" %}
 
-{% block title %}Customer Profile{% endblock %}
+{% block title %}My Personal Profile{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-    <h2>Personal Profile</h2>
+<div class="container">
+    <h2 style="margin-bottom: 10px;">Personal Profile</h2>
+    <p style="text-align: center; color: #7f8c8d; margin-bottom: 30px;">Manage your personal information and contact details.</p>
 
     {% if success %}
-        <p style="color: green;">{{ success }}</p>
+        <div style="background-color: #e6ffed; color: #22863a; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #22863a;">
+            <strong>Success!</strong> {{ success }}
+        </div>
     {% endif %}
 
-    <form action="/profile_details" method="POST">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <form action="/profile_details" method="POST">
 
-        <label>Email (cannot be changed):</label><br>
-        <input type="email" value="{{ user.email }}" disabled><br><br>
+            <fieldset style="background-color: #f8fafc;">
+                <legend><h3>Account Information</h3></legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" value="{{ user.email }}" disabled title="Email cannot be changed">
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Birth</label>
+                        <input type="text" value="{{ user.birth_date }}" disabled title="Birth date cannot be changed">
+                    </div>
+                </div>
+                <p style="font-size: 0.8rem; color: #7f8c8d; margin-top: 10px;">* Fields above are verified and cannot be modified online.</p>
+            </fieldset>
 
-        <label for="first_name">First Name:</label><br>
-        <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}" pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required><br><br>
+            <fieldset style="margin-top: 30px; border-color: #1a73e8;">
+                <legend><h3 style="color: #1a73e8;">Traveler Details</h3></legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="first_name">First Name</label>
+                        <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}"
+                               pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" value="{{ user.last_name }}"
+                               pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="passport">Passport Number</label>
+                        <input type="text" id="passport" name="passport" value="{{ user.passport }}"
+                               maxlength="20" required placeholder="Enter passport number">
+                    </div>
+                </div>
+            </fieldset>
 
-        <label for="last_name">Last Name:</label><br>
-        <input type="text" id="last_name" name="last_name" value="{{ user.last_name }}" pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" required><br><br>
+            <fieldset style="margin-top: 30px;">
+                <legend><h3>Contact Numbers</h3></legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Primary Phone</label>
+                        <input type="text" name="phones" value="{{ user.phones[0] if user.phones|length > 0 else '' }}"
+                               minlength="9" maxlength="15" pattern="\d+" title="Please enter at least 9 digits" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Secondary Phone (Optional)</label>
+                        <input type="text" name="phones" value="{{ user.phones[1] if user.phones|length > 1 else '' }}"
+                               pattern="\d+" minlength="9" maxlength="15">
+                    </div>
+                    <div class="form-group">
+                        <label>Additional Phone (Optional)</label>
+                        <input type="text" name="phones" value="{{ user.phones[2] if user.phones|length > 2 else '' }}"
+                               pattern="\d+" minlength="9" maxlength="15">
+                    </div>
+                </div>
+            </fieldset>
 
-        <label for="passport">Passport Number:</label><br>
-        <input type="text" id="passport" name="passport" value="{{ user.passport }}" maxlength="20"  required><br><br>
+            <div style="text-align: center; margin-top: 40px; padding-bottom: 50px;">
+                <button type="submit" class="btn-large" style="max-width: 300px;">Save Changes</button>
+            </div>
+        </form>
 
-        <label>Birth Date:</label><br>
-        <input type="text" value="{{ user.birth_date }}" disabled><br><br>
-
-        <label>Phone Numbers (At least one required, max 3):</label><br>
-
-        <input placeholder="Phone Number 1" type="text" name="phones"
-               value="{{ user.phones[0] if user.phones|length > 0 else '' }}"
-               minlength="9" maxlength="15" pattern="\d+" title="Please enter at least 9 digits" required>
-        <br><br>
-
-        <input placeholder="Phone Number 2 (Optional)" type="text" name="phones"
-               value="{{ user.phones[1] if user.phones|length > 1 else '' }}"
-               pattern="\d+" minlength="9" maxlength="15" title="Please enter at least 9 digits">
-        <br><br>
-
-        <input placeholder="Phone Number 3 (Optional)" type="text" name="phones"
-               value="{{ user.phones[2] if user.phones|length > 2 else '' }}"
-               pattern="\d+" minlength="9" maxlength="15" title="Please enter at least 9 digits">
-        <br><br>
-        <button type="submit">Save Changes</button>
-    </form>
-
-    <br>
-    <a href="/">Back to Homepage</a>
-
+        <div style="text-align: center;">
+            <a href="/" class="back-link">← Back to Homepage</a>
+        </div>
+    </div>
+</div>
 {% endblock %}

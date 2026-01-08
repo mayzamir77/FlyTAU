@@ -1,52 +1,70 @@
 {% extends "base.html" %}
 
-{% block title %}Flight Added Successfully{% endblock %}
+{% block title %}Flight Created Successfully{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-    <h1 style="color: green;">Flight Created Successfully!</h1>
-    <hr>
+<div class="container" style="text-align: center;">
 
-    <h3>1. Flight Info</h3>
-    <ul>
-        <li><strong>Route:</strong> {{ origin }} to {{ destination }}</li>
-        <li><strong>Date:</strong> {{ date }}</li>
-        <li><strong>Time:</strong> {{ time }}</li>
-    </ul>
+    <div style="margin-top: 40px; margin-bottom: 30px;">
+        <span style="font-size: 5rem; color: #27ae60;">✔</span>
+        <h1 style="margin-top: 10px; color: #2c3e50;">Flight Created Successfully!</h1>
+        <p style="font-size: 1.1rem; color: #7f8c8d;">The new flight has been added to the system and is now available for booking.</p>
+    </div>
 
-    <h3>2. Aircraft Details</h3>
-    <ul>
-        <li><strong>Aircraft ID:</strong> {{ aircraft_id }}</li>
-        <li><strong>Size:</strong> {{ size }}</li>
-    </ul>
+    <div class="summary-card" style="max-width: 800px; margin: 0 auto; text-align: left;">
+        <div class="summary-header" style="background: #27ae60;">
+            <h3>System Confirmation Summary</h3>
+        </div>
 
-    <h3>3. Seat Prices</h3>
-    <ul>
-        <li><strong>Economy Class:</strong> ${{ economy_price }} USD</li>
-        {% if business_price %}
-            <li><strong>Business Class:</strong> ${{ business_price }} USD</li>
-        {% endif %}
-    </ul>
+        <div class="summary-section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h4 style="color: #27ae60; margin-bottom: 10px;">Flight & Route</h4>
+                <div class="summary-data-row"><span class="summary-label">Route:</span> {{ origin }} ✈ {{ destination }}</div>
+                <div class="summary-data-row"><span class="summary-label">Date:</span> {{ date }}</div>
+                <div class="summary-data-row"><span class="summary-label">Time:</span> {{ time }}</div>
+            </div>
+            <div>
+                <h4 style="color: #27ae60; margin-bottom: 10px;">Aircraft</h4>
+                <div class="summary-data-row"><span class="summary-label">ID:</span> {{ aircraft_id }}</div>
+                <div class="summary-data-row"><span class="summary-label">Size:</span> {{ size }}</div>
+            </div>
+        </div>
 
-    <h3>4. Crew Assignment</h3>
-    <h4>Pilots:</h4>
-    <ul>
-        {% for info in pilot_names %}
-            <li>{{ info }}</li>
-        {% endfor %}
-    </ul>
+        <div class="summary-section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h4 style="color: #27ae60; margin-bottom: 10px;">Pricing</h4>
+                <div class="summary-data-row"><span class="summary-label">Economy:</span> ${{ economy_price }}</div>
+                {% if business_price %}
+                <div class="summary-data-row"><span class="summary-label">Business:</span> ${{ business_price }}</div>
+                {% endif %}
+            </div>
+            <div>
+                <h4 style="color: #27ae60; margin-bottom: 10px;">Crew Assigned</h4>
+                <div class="summary-data-row">
+                    <span class="summary-label">Pilots:</span>
+                    <small>{{ pilot_names | join(', ') }}</small>
+                </div>
+                <div class="summary-data-row">
+                    <span class="summary-label">Attendants:</span>
+                    <small>{{ attendant_names | join(', ') }}</small>
+                </div>
+            </div>
+        </div>
 
-    <h4>Flight Attendants:</h4>
-    <ul>
-        {% for info in attendant_names %}
-            <li>{{ info }}</li>
-        {% endfor %}
-    </ul>
+        <div class="total-payment-bar" style="background: #f0fff4;">
+            <p style="margin: 0; color: #27ae60; font-weight: bold;">Status: Active & Published</p>
+        </div>
+    </div>
 
-    <hr>
-    <p>
-        <a href="/add_flight_step1">Add Another Flight</a> |
-        <a href="/">Back to Dashboard</a>
-    </p>
-
+    <div style="margin-top: 40px; padding-bottom: 60px;">
+        <a href="/add_flight_step1" class="btn-filter" style="text-decoration: none; display: inline-block; background-color: #2c3e50;">
+            Add Another Flight
+        </a>
+        <a href="/" class="btn-filter" style="text-decoration: none; display: inline-block; margin-left: 10px;">
+            Go to Homepage
+        </a>
+    </div>
+</div>
 {% endblock %}

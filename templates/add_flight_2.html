@@ -1,53 +1,60 @@
 {% extends "base.html" %}
 
-{% block title %}Available Aircraft And Staff{% endblock %}
+{% block title %}Add Flight - Step 2{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-<h2>Flight Details</h2>
-<p><strong>Date:</strong> {{ flight_date }}</p>
-<p><strong>Departure Time:</strong> {{ departure_time }}</p>
-<p><strong>Origin:</strong> {{ origin }}</p>
-<p><strong>Destination:</strong> {{ destination }}</p>
+<div class="container">
+    <h2>Step 2: Select Aircraft</h2>
 
-<h3>Select Available Aircraft</h3>
-<form action="/add_flight_step2" method="POST">
-    <input type="hidden" name="flight_date" value="{{ flight_date }}">
-    <input type="hidden" name="departure_time" value="{{ departure_time }}">
-    <input type="hidden" name="origin" value="{{ origin }}">
-    <input type="hidden" name="destination" value="{{ destination }}">
+    <div class="summary-box" style="display: flex; justify-content: space-around; text-align: left; background: #f1f5f9; border-left: 5px solid #1a73e8;">
+        <div>
+            <span class="summary-label">Route:</span>
+            <span class="summary-value" style="font-weight: bold;">{{ origin }} ✈ {{ destination }}</span>
+        </div>
+        <div>
+            <span class="summary-label">Schedule:</span>
+            <span class="summary-value">{{ flight_date }} at {{ departure_time }}</span>
+        </div>
+    </div>
 
-    <table border="1" cellpadding="8" cellspacing="0">
-        <thead>
-            <tr>
-                <th>Select</th>
-                <th>Aircraft ID</th>
-                <th>Size</th>
-                <th>Manufacturer</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for ac in aircraft %}
-            <tr>
-                <td>
-                    <input type="radio" name="selected_aircraft" value="{{ ac.aircraft_id }}" required>
-                    <!-- מוסיפים hidden fields עם הגודל והיצרן -->
-                    <input type="hidden" name="size_{{ ac.aircraft_id }}" value="{{ ac.size }}">
-                    <input type="hidden" name="manufacturer_{{ ac.aircraft_id }}" value="{{ ac.manufacturer }}">
-                </td>
-                <td>{{ ac.aircraft_id }}</td>
-                <td>{{ ac.size }}</td>
-                <td>{{ ac.manufacturer }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <form action="/add_flight_step2" method="POST">
+        <input type="hidden" name="flight_date" value="{{ flight_date }}">
+        <input type="hidden" name="departure_time" value="{{ departure_time }}">
+        <input type="hidden" name="origin" value="{{ origin }}">
+        <input type="hidden" name="destination" value="{{ destination }}">
 
-    <br>
-    <input type="submit" value="Continue">
-</form>
+        <h3 style="text-align: left; margin-top: 30px; color: #2c3e50;">Available Aircraft</h3>
 
-<br>
-<a href="/">Back to Home</a>
+        <table class="flight-table">
+            <thead>
+                <tr>
+                    <th style="width: 80px; text-align: center;">Select</th>
+                    <th>Aircraft ID</th>
+                    <th>Size</th>
+                    <th>Manufacturer</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for ac in aircraft %}
+                <tr>
+                    <td style="text-align: center;">
+                        <input type="radio" name="selected_aircraft" value="{{ ac.aircraft_id }}" required>
+                        <input type="hidden" name="size_{{ ac.aircraft_id }}" value="{{ ac.size }}">
+                        <input type="hidden" name="manufacturer_{{ ac.aircraft_id }}" value="{{ ac.manufacturer }}">
+                    </td>
+                    <td style="font-weight: bold;">{{ ac.aircraft_id }}</td>
+                    <td>{{ ac.size }}</td>
+                    <td>{{ ac.manufacturer }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
 
+        <div style="text-align: center; margin-top: 30px;">
+            <input type="submit" value="Continue to Next Step" class="btn-large" style="max-width: 300px;">
+        </div>
+    </form>
+</div>
 {% endblock %}

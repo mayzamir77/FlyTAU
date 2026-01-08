@@ -1,74 +1,86 @@
 {% extends "base.html" %}
 
-{% block title %}Add Staff{% endblock %}
+{% block title %}Add New Staff Member{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-{% if error %}
-    <p style="color:red;">{{ error }}</p>
-{% endif %}
-<h3>Add New Staff Member</h3>
-    <form action="/add_staff" method="POST">
+<div class="container">
+    <h2 style="margin-bottom: 30px;">Human Resources: Add Staff</h2>
 
-      <label>ID:</label>
-        <input type="text" name="id"
-               maxlength="50" required>
-        <br><br>
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
 
-        <label>First Name (Hebrew):</label>
-        <input type="text" name="f_name"
-               pattern="[א-ת\s]+"
-               title="Please enter Hebrew letters only"
-               maxlength="50" required>
-        <br><br>
+    <div style="max-width: 900px; margin: 0 auto;">
+        <form action="/add_staff" method="POST">
 
-        <label>Last Name (Hebrew):</label>
-        <input type="text" name="l_name"
-               pattern="[א-ת\s]+"
-               title="Please enter Hebrew letters only"
-               maxlength="50" required>
-        <br><br>
+            <fieldset style="border-color: #1a73e8;">
+                <legend><h3 style="color: #1a73e8;">Personal Information</h3></legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Staff ID (Passport/National ID)</label>
+                        <input type="text" name="id" maxlength="50" required placeholder="Enter ID number">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="text" name="phone" pattern="[0-9]+" title="Numbers only" maxlength="15" required placeholder="e.g. 0501234567">
+                    </div>
+                    <div class="form-group">
+                        <label>First Name (Hebrew)</label>
+                        <input type="text" name="f_name" pattern="[א-ת\s]+" title="Hebrew letters only" maxlength="50" required placeholder="שם פרטי בעברית">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name (Hebrew)</label>
+                        <input type="text" name="l_name" pattern="[א-ת\s]+" title="Hebrew letters only" maxlength="50" required placeholder="שם משפחה בעברית">
+                    </div>
+                </div>
+            </fieldset>
 
-        <label>Select Role:</label>
-        <select name="new_role" required>
-            <option value="" disabled selected>Select role...</option>
-            <option value="Pilot">Pilot</option>
-            <option value="Flight Attendant">Flight Attendant</option>
-        </select>
-        <br><br>
+            <fieldset style="margin-top: 30px; background-color: #f8fafc; border-color: #1a73e8;">
+                <legend><h3 style="color: #1a73e8;">Role & Certification</h3></legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Select Role</label>
+                        <select name="new_role" required>
+                            <option value="" disabled selected>Select role...</option>
+                            <option value="Pilot">Pilot</option>
+                            <option value="Flight Attendant">Flight Attendant</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Start Working Date</label>
+                        <input type="date" name="start_date" value="{{ today }}" required>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" name="is_certified" value="1" id="cert_check" style="width: 20px; height: 20px; cursor: pointer;">
+                    <label for="cert_check" style="margin: 0; cursor: pointer; color: #2c3e50;">Certified for Long Flights</label>
+                </div>
+            </fieldset>
 
-        <label>Phone:</label>
-        <input type="text" name="phone"
-               pattern="[0-9]+"
-               title="Please enter numbers only"
-               maxlength="15" required>
-        <br><br>
+            <fieldset style="margin-top: 30px; border-color: #1a73e8;">
+                <legend><h3 style="color: #1a73e8;">Address Details</h3></legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>City (English)</label>
+                        <input type="text" name="city" pattern="[A-Za-z\s]+" title="English letters only" required placeholder="City name">
+                    </div>
+                    <div class="form-group">
+                        <label>Street (English)</label>
+                        <input type="text" name="street" pattern="[A-Za-z\s]+" title="English letters only" required placeholder="Street name">
+                    </div>
+                    <div class="form-group">
+                        <label>House Number</label>
+                        <input type="number" name="house_num" min="1" required placeholder="e.g. 42">
+                    </div>
+                </div>
+            </fieldset>
 
-        <label>City (English):</label>
-        <input type="text" name="city"
-               pattern="[A-Za-z\s]+"
-               title="Please enter English letters only" required>
-        <br><br>
-
-        <label>Street (English):</label>
-        <input type="text" name="street"
-               pattern="[A-Za-z\s]+"
-               title="Please enter English letters only" required>
-        <br><br>
-
-        <label>House Number:</label>
-        <input type="number" name="house_num" min="1" required>
-        <br><br>
-
-        <label>Start Date:</label>
-        <input type="date" name="start_date" value="{{ today }}" required>
-        <br><br>
-
-        <label>Certified for Long Flights?</label>
-        <input type="checkbox" name="is_certified" value="1">
-        <br><br>
-
-        <button type="submit">Save New Employee</button>
-    </form>
-
+            <div style="text-align: center; margin-top: 40px; padding-bottom: 50px;">
+                <input type="submit" value="Save New Employee" class="btn-large" style="max-width: 400px;">
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

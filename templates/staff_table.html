@@ -3,47 +3,73 @@
 {% block title %}Staff Management{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-    <h1>Staff Management</h1>
+<div class="container">
+    <h2 style="margin-bottom: 10px;">Staff Management</h2>
+    <p style="text-align: center; color: #7f8c8d; margin-bottom: 30px;">Manage flight crew members, certifications, and contact details.</p>
 
-    <p>
-        <a href="/add_staff" style="background-color: #4CAF50; color: white; padding: 10px; text-decoration: none; border-radius: 5px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div style="display: flex; gap: 10px; background: #f1f5f9; padding: 5px; border-radius: 8px;">
+            <a href="/staff_management?show=all" class="btn-filter" style="background: {{ '#1a73e8' if request.args.get('show') == 'all' or not request.args.get('show') else '#fff' }}; color: {{ '#fff' if request.args.get('show') == 'all' or not request.args.get('show') else '#475569' }}; padding: 8px 15px; font-size: 0.9rem; text-decoration: none; border-radius: 6px;">All Staff</a>
+
+            <a href="/staff_management?show=Pilot" class="btn-filter" style="background: {{ '#1a73e8' if request.args.get('show') == 'Pilot' else '#fff' }}; color: {{ '#fff' if request.args.get('show') == 'Pilot' else '#475569' }}; padding: 8px 15px; font-size: 0.9rem; text-decoration: none; border-radius: 6px;">Pilots</a>
+
+            <a href="/staff_management?show=Attendant" class="btn-filter" style="background: {{ '#1a73e8' if request.args.get('show') == 'Attendant' else '#fff' }}; color: {{ '#fff' if request.args.get('show') == 'Attendant' else '#475569' }}; padding: 8px 15px; font-size: 0.9rem; text-decoration: none; border-radius: 6px;">Attendants</a>
+        </div>
+
+        <a href="/add_staff" class="btn-filter" style="text-decoration: none; background-color: #27ae60;">
             + Add New Staff Member
         </a>
-    </p>
-
-    <div>
-        <a href="/staff_management?show=all">[ Show All Staff ]</a> |
-        <a href="/staff_management?show=Pilot">[ Show Pilots Only ]</a> |
-        <a href="/staff_management?show=Attendant">[ Show Attendants Only ]</a>
     </div>
 
-    <br>
+    <div style="overflow-x: auto;">
+        <table class="flight-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name (Hebrew)</th>
+                    <th>Role</th>
+                    <th>Contact</th>
+                    <th>Address</th>
+                    <th>Hired Date</th>
+                    <th style="text-align: center;">Long Flight</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in staff_members %}
+                <tr>
+                    <td style="font-weight: bold;">{{ member[0] }}</td>
+                    <td>{{ member[1] }} {{ member[2] }}</td>
+                    <td>
+                        <span class="status-badge" style="background: #eef2f7; color: #1e293b; min-width: 80px; text-align: center;">
+                            {{ member[9] }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.9rem;">{{ member[3] }}</div>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.85rem; color: #64748b;">
+                            {{ member[5] }} {{ member[6] }}, {{ member[4] }}
+                        </div>
+                    </td>
+                    <td style="font-size: 0.9rem;">{{ member[7] }}</td>
+                    <td style="text-align: center;">
+                        {% if member[8] == 1 %}
+                            <span style="color: #27ae60; font-weight: bold;">✔</span>
+                        {% else %}
+                            <span style="color: #cbd5e0;">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>First Name (Hebrew)</th>
-                <th>Last Name (Hebrew)</th>
-                <th>Role</th>
-                <th>Phone</th>
-                <th>City</th>
-                <th>Street</th>
-                <th>House Num</th>
-                <th>Start Date</th>
-                <th>Long Flight Certified</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for member in staff_members %}
-            <tr>
-                <td>{{ member[0] }}</td> <td>{{ member[1] }}</td> <td>{{ member[2] }}</td> <td>{{ member[9] }}</td> <td>{{ member[3] }}</td> <td>{{ member[4] }}</td> <td>{{ member[5] }}</td> <td>{{ member[6] }}</td> <td>{{ member[7] }}</td> <td>{{ 'Yes' if member[8] == 1 else 'No' }}</td> </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <hr>
-<a href="/admin_homepage">Back To Homepage </a>
-
+    <div style="text-align: center; margin-top: 30px; padding-bottom: 50px;">
+        <a href="/admin_homepage" class="back-link">← Back to Dashboard</a>
+    </div>
+</div>
 {% endblock %}

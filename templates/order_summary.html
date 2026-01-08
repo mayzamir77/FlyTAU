@@ -3,24 +3,60 @@
 {% block title %}Order Summary{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-    <h2>Final Order Summary</h2>
+<div class="container">
+    <h2 style="text-align: center;">Final Order Summary</h2>
 
-    <h3>Your Details</h3>
-    <p>Name: {{ data.first_name }} {{ data.last_name }}</p>
-    <p>Email: {{ data.email }}</p>
-    <p>Passport: {{ data.passport }}</p>
+    <div class="summary-card">
+        <div class="summary-header">
+            <h3>Review Your Details</h3>
+        </div>
 
-    <h3>Flight Details</h3>
-    <p>Flight: {{ data.flight_id }}</p>
-    <p>Seats: {{ data.selected_seats | join(', ') }}</p>
-    <p><strong>Total Price: ${{ data.total_price }}</strong></p>
+        <div class="summary-section">
+            <div class="summary-data-row">
+                <span class="summary-label">Name:</span>
+                <span class="summary-value">{{ data.first_name }} {{ data.last_name }}</span>
+            </div>
+            <div class="summary-data-row">
+                <span class="summary-label">Email:</span>
+                <span class="summary-value">{{ data.email }}</span>
+            </div>
+            <div class="summary-data-row">
+                <span class="summary-label">Passport:</span>
+                <span class="summary-value">{{ data.passport }}</span>
+            </div>
+        </div>
 
-    <form action="/confirm_booking" method="POST">
-        <input type="submit" value="Yes, I confirm and want to Pay">
-    </form>
+        <div class="summary-section">
+            <div class="summary-data-row">
+                <span class="summary-label">Flight:</span>
+                <span class="summary-value">#{{ data.flight_id }}</span>
+            </div>
+            <div class="summary-data-row">
+                <span class="summary-label">Seats:</span>
+                <span class="summary-value">{{ data.selected_seats | join(', ') }}</span>
+            </div>
+        </div>
 
-    <br>
-    <a href="/edit_passenger_details">No, go back and edit</a>
+        <div class="total-payment-bar">
+            <span style="font-weight: bold; font-size: 1.2rem;">Total Price:</span>
+            <span class="price">${{ data.total_price }}</span>
+        </div>
+    </div>
 
+    <div style="max-width: 700px; margin: 0 auto; text-align: center;">
+        <form action="/confirm_booking" method="POST">
+            <button type="submit" class="btn-final-confirm">
+                Confirm and Pay Now
+            </button>
+        </form>
+
+        <div style="margin-top: 20px;">
+            <a href="/edit_passenger_details" class="back-link">
+                ← Go back and edit
+            </a>
+        </div>
+    </div>
+</div>
 {% endblock %}

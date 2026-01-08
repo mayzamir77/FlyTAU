@@ -1,14 +1,40 @@
 {% extends "base.html" %}
 
-{% block title %}Flight Cancellation Confirmation{% endblock %}
+{% block title %}Flight Cancellation Successful{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
+<div class="container" style="text-align: center; padding-top: 60px;">
 
-<h2>Flight Cancellation Successful</h2>
+    <div style="margin-bottom: 40px;">
+        <span style="font-size: 6rem; color: #27ae60; display: block; margin-bottom: 20px;">✔</span>
+        <h1 style="color: #2c3e50; margin-bottom: 10px;">Flight Cancelled Successfully</h1>
+        <p style="font-size: 1.2rem; color: #7f8c8d;">
+            Flight <strong>#{{ flight_id }}</strong> has been removed from the active schedule.
+        </p>
+    </div>
 
-<p>Flight <strong>{{ flight_id }}</strong> has been cancelled successfully.</p>
+    <div class="summary-card" style="max-width: 550px; margin: 0 auto; border-top: 4px solid #d73a49;">
+        <div class="summary-section" style="text-align: center; padding: 30px;">
+            <p style="font-size: 1.1rem; color: #2c3e50; margin-bottom: 10px;">
+                <strong>System Logs Updated:</strong>
+            </p>
+            <ul style="list-style: none; padding: 0; color: #7f8c8d; line-height: 1.8;">
+                <li>• All pending bookings have been voided.</li>
+                <li>• Passenger notifications have been queued.</li>
+                <li>• Aircraft and Crew have been unassigned.</li>
+            </ul>
+        </div>
+        <div class="total-payment-bar" style="background: #fff5f5; justify-content: center;">
+            <span style="color: #d73a49; font-weight: bold;">Status: Cancelled & Archived</span>
+        </div>
+    </div>
 
-<a href="/admin_homepage">Back to Admin Homepage</a>
-
+    <div style="margin-top: 50px; padding-bottom: 80px;">
+        <a href="/admin_homepage" class="btn-filter" style="text-decoration: none; display: inline-block; padding: 15px 40px; background-color: #2c3e50;">
+            Back to Admin Dashboard
+        </a>
+    </div>
+</div>
 {% endblock %}

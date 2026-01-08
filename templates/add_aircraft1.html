@@ -1,26 +1,47 @@
 {% extends "base.html" %}
 
-{% block title %}add_aircraft1{% endblock %}
+{% block title %}Add New Aircraft{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-<h2>Add New Aircraft</h2>
+<div class="container">
+    <h2 style="margin-bottom: 20px;">Fleet Management</h2>
+    <p style="text-align: center; color: #7f8c8d; margin-bottom: 30px;">Register a new aircraft to the corporate fleet.</p>
 
-<form method="POST">
-    <label>Manufacturer:</label><br>
-    <select name="manufacturer" required>
-        <option value="Dassault">Dassault</option>
-        <option value="Boeing">Boeing</option>
-        <option value="Airbus">Airbus</option>
-    </select><br><br>
+    <div style="max-width: 500px; margin: 0 auto;">
+        <form method="POST">
+            <fieldset>
+                <legend><h3>Aircraft Specifications</h3></legend>
 
-    <label>Size:</label><br>
-    <select name="size" required>
-        <option value="Small">Small</option>
-        <option value="Large">Large</option>
-    </select><br><br>
+                <div class="form-group">
+                    <label for="manufacturer">Manufacturer</label>
+                    <select name="manufacturer" id="manufacturer" required>
+                        <option value="" disabled selected>Select manufacturer...</option>
+                        <option value="Dassault">Dassault</option>
+                        <option value="Boeing">Boeing</option>
+                        <option value="Airbus">Airbus</option>
+                    </select>
+                </div>
 
-    <input type="submit" value="Continue">
-</form>
+                <div class="form-group" style="margin-top: 20px;">
+                    <label for="size">Aircraft Size</label>
+                    <select name="size" id="size" required>
+                        <option value="" disabled selected>Select capacity size...</option>
+                        <option value="Small">Small (Economy only)</option>
+                        <option value="Large">Large (Economy & Business)</option>
+                    </select>
+                </div>
 
+                <div style="margin-top: 30px;">
+                    <input type="submit" value="Register Aircraft" class="btn-large">
+                </div>
+            </fieldset>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/" class="back-link">← Cancel and return to Dashboard</a>
+        </div>
+    </div>
+</div>
 {% endblock %}
