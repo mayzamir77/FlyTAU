@@ -1142,6 +1142,21 @@ def create_new_flight_complete(f_data, pilot_ids, attendant_ids, prices):
 
 # ----show_flight_board functions----
 
+def update_completed_flights():
+    """
+    Automatically updates flight status to 'Completed' for flights that have already landed.
+    """
+    with db_cur() as cursor:
+        query = """
+        UPDATE flight f
+        JOIN routes r ON f.origin_airport = r.origin_airport 
+                      AND f.destination_airport = r.destination_airport
+        SET f.flight_status = 'Completed'
+        WHERE f.flight_status IN ('Active', 'Fully Booked')
+        AND TIMESTAMP(f.departure_date, f.departure_time) + INTERVAL r.flight_duration_mins MINUTE < NOW()
+        """
+        cursor.execute(query)
+
 def flight_board(status_filter):
     """
     Fetches flight records from the database.
