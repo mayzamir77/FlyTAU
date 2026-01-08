@@ -1,0 +1,303 @@
+/* --- עיצוב כללי ומכולה --- */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1, h2 {
+    color: #2c3e50;
+    text-align: center;
+}
+
+/* --- סגנון 1: טבלת ניהול קלאסית (.flight-table) --- */
+.flight-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.flight-table thead tr {
+    background-color: #1a73e8;
+    color: white;
+    text-align: left;
+}
+
+.flight-table th, .flight-table td {
+    padding: 15px 20px;
+}
+
+.flight-table tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+}
+
+.flight-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* --- סגנון 2: כרטיסי טיסה ללקוחות (.booking-table) --- */
+.booking-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 15px;
+}
+
+.booking-table thead { display: none; }
+
+.booking-table tr {
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin-bottom: 15px;
+    border: 1px solid #eef0f2;
+    transition: transform 0.2s;
+}
+
+.booking-table tr:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+}
+
+.card-main-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.flight-timing {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex: 2;
+}
+
+.time-block .time { font-size: 1.6rem; font-weight: bold; color: #2c3e50; }
+.time-block .airport-code { color: #7f8c8d; font-weight: bold; display: block; }
+
+.flight-duration { text-align: center; min-width: 140px; }
+.duration-text { font-size: 0.75rem; color: #7f8c8d; margin-bottom: 4px; }
+.arrow-line { height: 2px; background: #dfe6e9; width: 100%; position: relative; }
+.arrow-line::after { content: '✈'; position: absolute; right: -5px; top: -10px; color: #1a73e8; font-size: 14px; }
+
+.flight-price-section { text-align: right; flex: 1; }
+.price-tag { font-size: 1.8rem; font-weight: bold; color: #27ae60; }
+
+.info-footer {
+    border-top: 1px solid #eee;
+    padding: 10px 20px;
+    background-color: #fafbfc;
+    border-radius: 0 0 12px 12px;
+    display: flex;
+    gap: 20px;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+}
+
+/* --- סגנון 3: מפת מושבים משודרגת (.seat-map-wrapper) --- */
+.seat-map-wrapper {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 60px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    display: inline-block;
+    border: 1px solid #eef2f5;
+    margin-top: 20px;
+}
+
+.seat-map-table {
+    border-collapse: separate;
+    border-spacing: 12px;
+}
+
+.seat-item {
+    width: 45px;
+    height: 50px;
+    background: #f0f4f8;
+    border-radius: 8px 8px 15px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+
+.seat-item.available {
+    background: #1a73e8;
+    color: white;
+}
+
+.seat-item.available:hover {
+    background: #1557b0;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(26, 115, 232, 0.4);
+}
+
+.seat-item.occupied {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+input[type="checkbox"]:checked + .seat-item {
+    background: #27ae60 !important;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(39, 174, 96, 0.5);
+}
+
+.seat-checkbox { display: none; }
+
+.aisle {
+    width: 40px;
+}
+
+/* --- תגיות סטטוס וכפתורים --- */
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: bold;
+    display: inline-block;
+}
+.status-active { background-color: #e6ffed; color: #22863a; }
+.status-cancelled { background-color: #ffeef0; color: #d73a49; }
+
+.btn-filter {
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+.btn-filter:hover { background-color: #1557b0; }
+
+.back-link {
+    display: inline-block;
+    margin-top: 20px;
+    text-decoration: none;
+    color: #1a73e8;
+}
+
+.error {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* --- עיצוב טפסים ופרטי נוסע --- */
+
+/* קופסת סיכום ההזמנה */
+.summary-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.summary-box h3 { margin-top: 0; color: #1a73e8; }
+.price-total { font-size: 1.4rem; font-weight: bold; color: #27ae60; }
+
+/* עיצוב הטופס והשדות */
+fieldset {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 30px;
+    background: white;
+    margin-bottom: 30px;
+}
+
+legend h3 {
+    padding: 0 15px;
+    color: #2c3e50;
+    font-size: 1.3rem;
+}
+
+/* סידור השדות בזוגות (Layout) */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* שני טורים */
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+/* עיצוב ה-Labels */
+label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+/* עיצוב ה-Inputs */
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="tel"] {
+    padding: 12px 15px;
+    border: 1.5px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s;
+    outline: none;
+}
+
+/* אפקט פוקוס - כשהמשתמש מקליד */
+input:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+}
+
+/* עיצוב לשדות לקריאה בלבד (Registered Users) */
+input[readonly] {
+    background-color: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #64748b;
+    cursor: not-allowed;
+}
+
+/* עיצוב כפתור השליחה */
+input[type="submit"].btn-large {
+    width: 100%;
+    padding: 15px;
+    background: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+input[type="submit"].btn-large:hover {
+    background: #1557b0;
+}
