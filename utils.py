@@ -518,24 +518,29 @@ def get_admin_details(id):
 
 def normalize_time(t):
     """
-    Standardizes various time formats into a python datetime.time object.
-    Supports timedelta (from MySQL), strings (from forms), and time objects.
+    Standardizes various time formats into a python time object.
+    Supports timedelta (from MySQL), strings (from forms), and existing time objects.
     """
-    if isinstance(t, datetime.time):
+    # Check if already a time object
+    if isinstance(t, time):
         return t
-    if isinstance(t, datetime.timedelta):
+
+    # Handle MySQL timedelta format
+    if isinstance(t, timedelta):
         total_seconds = int(t.total_seconds())
         hours = total_seconds // 3600
         minutes = (total_seconds % 3600) // 60
         seconds = total_seconds % 60
-        return datetime.time(hours % 24, minutes, seconds)
+        return time(hours % 24, minutes, seconds)
+
+    # Handle string input from forms
     if isinstance(t, str):
         try:
-            return datetime.datetime.strptime(t[:5], "%H:%M").time()
+            return datetime.strptime(t[:5], "%H:%M").time()
         except ValueError:
-            return datetime.datetime.strptime(t, "%H:%M:%S").time()
-    raise TypeError(f"Unsupported time type: {type(t)}")
+            return datetime.strptime(t, "%H:%M:%S").time()
 
+    raise TypeError(f"Unsupported time type: {type(t)}")
 
 def get_available_aircraft(flight_date, origin, destination, dep_time):
     """
@@ -545,8 +550,7 @@ def get_available_aircraft(flight_date, origin, destination, dep_time):
     - Checks location continuity using check_aircraft_continuity_full.
     """
     if isinstance(flight_date, str):
-        flight_date = datetime.datetime.strptime(flight_date, "%Y-%m-%d").date()
-
+        flight_date = datetime.strptime(flight_date, "%Y-%m-%d").date()
     dep_time = normalize_time(dep_time)
 
     # Fetch flight duration for the specific route
@@ -617,13 +621,13 @@ def check_aircraft_continuity_backward(aircraft_id, new_origin, new_date, new_de
     - If it's at a different airport, a 12-hour gap is required to account for potential ferry flights or scheduling shifts.
     """
     if isinstance(new_date, str):
-        new_date = datetime.datetime.strptime(new_date, "%Y-%m-%d").date()
+        new_date = datetime.strptime(new_date, "%Y-%m-%d").date()
 
     new_dep_time = normalize_time(new_dep_time)
-    new_start = datetime.datetime.combine(new_date, new_dep_time)
+    new_start = datetime.combine(new_date, new_dep_time)
 
-    turnaround = datetime.timedelta(minutes=30)
-    half_day = datetime.timedelta(hours=12)
+    turnaround = timedelta(minutes=30)
+    half_day = timedelta(hours=12)
 
     with db_cur() as cursor:
         # Fetching flights for the specific aircraft up to the new flight date
@@ -641,8 +645,8 @@ def check_aircraft_continuity_backward(aircraft_id, new_origin, new_date, new_de
 
     for f_date, f_time, duration, f_dest in flights:
         f_time = normalize_time(f_time)
-        f_start = datetime.datetime.combine(f_date, f_time)
-        f_landing = f_start + datetime.timedelta(minutes=duration)
+        f_start = datetime.combine(f_date, f_time)
+        f_landing = f_start + timedelta(minutes=duration)
 
         # Identify the most recent landing before the new departure time
         if f_landing <= new_start:
@@ -667,14 +671,14 @@ def check_aircraft_continuity_forward(aircraft_id, new_destination, new_date, ne
     - Requires a 12-hour gap if the next flight departs from a different airport.
     """
     if isinstance(new_date, str):
-        new_date = datetime.datetime.strptime(new_date, "%Y-%m-%d").date()
+        new_date = datetime.strptime(new_date, "%Y-%m-%d").date()
 
     new_dep_time = normalize_time(new_dep_time)
-    new_start = datetime.datetime.combine(new_date, new_dep_time)
-    new_landing = new_start + datetime.timedelta(minutes=new_duration)
+    new_start = datetime.combine(new_date, new_dep_time)
+    new_landing = new_start + timedelta(minutes=new_duration)
 
-    turnaround = datetime.timedelta(minutes=30)
-    half_day = datetime.timedelta(hours=12)
+    turnaround =timedelta(minutes=30)
+    half_day =timedelta(hours=12)
 
     with db_cur() as cursor:
         # Fetching flights for the specific aircraft starting from the new flight date
@@ -691,7 +695,7 @@ def check_aircraft_continuity_forward(aircraft_id, new_destination, new_date, ne
 
     for f_date, f_time, f_origin in flights:
         f_time = normalize_time(f_time)
-        f_start = datetime.datetime.combine(f_date, f_time)
+        f_start = datetime.combine(f_date, f_time)
 
         # Identify the first departure occurring after the new flight's landing
         if f_start >= new_landing:
@@ -733,7 +737,7 @@ def get_available_pilots(flight_date, origin, destination, dep_time):
     - Verifies physical location continuity.
     """
     if isinstance(flight_date, str):
-        flight_date = datetime.datetime.strptime(flight_date, "%Y-%m-%d").date()
+        flight_date = datetime.strptime(flight_date, "%Y-%m-%d").date()
 
     dep_time = normalize_time(dep_time)
 
@@ -802,9 +806,9 @@ def check_pilot_continuity_backward(pilot_id, new_origin, new_date, new_dep_time
     Checks if the pilot can reach the origin airport from their last landing location.
     Requires a 30-min buffer if at the same airport, or 12 hours if a transfer is needed.
     """
-    new_start = datetime.datetime.combine(new_date, new_dep_time)
-    turnaround = datetime.timedelta(minutes=30)
-    half_day = datetime.timedelta(hours=12)
+    new_start = datetime.combine(new_date, new_dep_time)
+    turnaround = timedelta(minutes=30)
+    half_day = timedelta(hours=12)
 
     with db_cur() as cursor:
         cursor.execute("""
@@ -821,8 +825,8 @@ def check_pilot_continuity_backward(pilot_id, new_origin, new_date, new_dep_time
 
     for f_date, f_time, duration, f_dest in flights:
         f_time = normalize_time(f_time)
-        f_start = datetime.datetime.combine(f_date, f_time)
-        f_landing = f_start + datetime.timedelta(minutes=duration)
+        f_start = datetime.combine(f_date, f_time)
+        f_landing = f_start + timedelta(minutes=duration)
 
         # Look for the last landing before the new departure
         if f_landing <= new_start:
@@ -841,10 +845,10 @@ def check_pilot_continuity_forward(pilot_id, new_destination, new_date, new_dep_
     """
     Ensures the new flight doesn't conflict with future flights already assigned to the pilot.
     """
-    new_start = datetime.datetime.combine(new_date, new_dep_time)
-    new_landing = new_start + datetime.timedelta(minutes=duration)
-    turnaround = datetime.timedelta(minutes=30)
-    half_day = datetime.timedelta(hours=12)
+    new_start = datetime.combine(new_date, new_dep_time)
+    new_landing = new_start + timedelta(minutes=duration)
+    turnaround = timedelta(minutes=30)
+    half_day = timedelta(hours=12)
 
     with db_cur() as cursor:
         cursor.execute("""
@@ -860,7 +864,7 @@ def check_pilot_continuity_forward(pilot_id, new_destination, new_date, new_dep_
 
     for f_date, f_time, f_origin in flights:
         f_time = normalize_time(f_time)
-        f_start = datetime.datetime.combine(f_date, f_time)
+        f_start = datetime.combine(f_date, f_time)
 
         # Look for the first departure after the new landing
         if f_start >= new_landing:
@@ -890,9 +894,9 @@ def check_attendant_continuity_backward(attendant_id, new_origin, new_date, new_
     """
     Checks if the flight attendant can reach the origin airport from their last landing location.
     """
-    new_start = datetime.datetime.combine(new_date, new_dep_time)
-    turnaround = datetime.timedelta(minutes=30)
-    half_day = datetime.timedelta(hours=12)
+    new_start = datetime.combine(new_date, new_dep_time)
+    turnaround = timedelta(minutes=30)
+    half_day = timedelta(hours=12)
 
     with db_cur() as cursor:
         cursor.execute("""
@@ -909,8 +913,8 @@ def check_attendant_continuity_backward(attendant_id, new_origin, new_date, new_
 
     for f_date, f_time, duration, f_dest in flights:
         f_time = normalize_time(f_time)
-        f_start = datetime.datetime.combine(f_date, f_time)
-        f_landing = f_start + datetime.timedelta(minutes=duration)
+        f_start = datetime.combine(f_date, f_time)
+        f_landing = f_start + timedelta(minutes=duration)
 
         if f_landing <= new_start:
             if latest_landing is None or f_landing > latest_landing:
@@ -927,10 +931,10 @@ def check_attendant_continuity_forward(attendant_id, new_destination, new_date, 
     """
     Ensures the new flight doesn't conflict with future flights assigned to the attendant.
     """
-    new_start = datetime.datetime.combine(new_date, new_dep_time)
-    new_landing = new_start + datetime.timedelta(minutes=duration)
-    turnaround = datetime.timedelta(minutes=30)
-    half_day = datetime.timedelta(hours=12)
+    new_start = datetime.combine(new_date, new_dep_time)
+    new_landing = new_start + timedelta(minutes=duration)
+    turnaround = timedelta(minutes=30)
+    half_day = timedelta(hours=12)
 
     with db_cur() as cursor:
         cursor.execute("""
@@ -946,7 +950,7 @@ def check_attendant_continuity_forward(attendant_id, new_destination, new_date, 
 
     for f_date, f_time, f_origin in flights:
         f_time = normalize_time(f_time)
-        f_start = datetime.datetime.combine(f_date, f_time)
+        f_start = datetime.combine(f_date, f_time)
 
         if f_start >= new_landing:
             if earliest_next_dep is None or f_start < earliest_next_dep:
@@ -978,7 +982,7 @@ def get_available_attendants(flight_date, origin, destination, dep_time):
     - Verifies physical location continuity.
     """
     if isinstance(flight_date, str):
-        flight_date = datetime.datetime.strptime(flight_date, "%Y-%m-%d").date()
+        flight_date = datetime.strptime(flight_date, "%Y-%m-%d").date()
 
     dep_time = normalize_time(dep_time)
 
@@ -1307,8 +1311,8 @@ def can_cant_cancel_flight(flight_id):
 
         # Normalize time and calculate the difference from 'now'
         time_obj = normalize_time(departure_time)
-        flight_datetime = datetime.datetime.combine(departure_date, time_obj)
-        now = datetime.datetime.now()
+        flight_datetime = datetime.combine(departure_date, time_obj)
+        now = datetime.now()
 
         diff_hours = (flight_datetime - now).total_seconds() / 3600
         return diff_hours >= 72
