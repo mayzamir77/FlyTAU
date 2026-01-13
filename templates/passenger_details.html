@@ -36,41 +36,74 @@
 
                 <div class="form-group">
                     <label>First Name (English):</label>
-                    <input type="text" name="first_name" value="{{ session.user_first_name or session['booking_data'].get('first_name', '') }}"
-                    {% if session.get('user_email') %}readonly{% endif %} required>
+                    <input type="text" name="first_name"
+                           value="{{ session.user_first_name or session['booking_data'].get('first_name', '') }}"
+                           pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" autocomplete="off"
+                           {% if session.get('user_email') %}readonly{% endif %} required>
                 </div>
 
                 <div class="form-group">
                     <label>Last Name (English):</label>
-                    <input type="text" name="last_name" value="{{ session.user_last_name or session['booking_data'].get('last_name', '') }}"
-                    {% if session.get('user_email') %}readonly{% endif %} required>
+                    <input type="text" name="last_name"
+                           value="{{ session.user_last_name or session['booking_data'].get('last_name', '') }}"
+                           pattern="[A-Za-z\s]+" title="English letters only" maxlength="50" autocomplete="off"
+                           {% if session.get('user_email') %}readonly{% endif %} required>
                 </div>
 
                 <div class="form-group">
                     <label>Email Address:</label>
-                    <input type="email" name="email" value="{{ session.user_email or session['booking_data'].get('email', '') }}"
-                    {% if session.get('user_email') %}readonly{% endif %} required>
+                    <input type="email" name="email"
+                           value="{{ session.user_email or session['booking_data'].get('email', '') }}"
+                           maxlength="100" autocomplete="off"
+                           {% if session.get('user_email') %}readonly{% endif %} required>
                 </div>
 
                 <div class="form-group">
                     <label>Passport Number:</label>
-                    <input type="text" name="passport" value="{{ session.user_passport or session['booking_data'].get('passport', '') }}"
-                    {% if session.get('user_email') %}readonly{% endif %} required>
+                    <input type="text" name="passport"
+                           value="{{ session.user_passport or session['booking_data'].get('passport', '') }}"
+                           pattern="\d{6,20}" title="Please enter between 6 to 20 digits only"
+                           minlength="6" maxlength="20" inputmode="numeric" autocomplete="off"
+                           {% if session.get('user_email') %}readonly{% endif %} required>
                 </div>
 
                 <div class="form-group">
                     <label>Date of Birth:</label>
-                    <input type="date" name="birth_date" value="{{ session.user_birth_date or session['booking_data'].get('birth_date', '') }}"
-                    {% if session.get('user_email') %}readonly{% endif %} max="{{ today }}" required>
+                    <input type="date" name="birth_date"
+                           value="{{ session.user_birth_date or session['booking_data'].get('birth_date', '') }}"
+                           max="{{ today }}" autocomplete="off"
+                           {% if session.get('user_email') %}readonly{% endif %} required>
                 </div>
 
                 <div class="form-group">
                     <label>Primary Phone Number:</label>
-                    <input type="text" name="phones" value="{{ session.user_phones[0] if session.user_phones else session['booking_data'].get('phones', [''])[0] }}"
-                    {% if session.get('user_email') %}readonly{% endif %} required>
+                    <input type="text" name="phones"
+                           value="{{ session.user_phones[0] if session.user_phones else session['booking_data'].get('phones', [''])[0] }}"
+                           pattern="\d+" title="Please enter digits only"
+                           minlength="9" maxlength="15" inputmode="tel" autocomplete="off"
+                           {% if session.get('user_email') %}readonly{% endif %} required>
                 </div>
 
-            </div> </fieldset>
+                <div class="form-group">
+                    <label>Phone Number 2 (Optional):</label>
+                    <input type="text" name="phones"
+                           value="{{ session.user_phones[1] if session.user_phones|length > 1 else session['booking_data'].get('phones', ['', ''])[1] }}"
+                           pattern="\d+" title="Please enter digits only"
+                           minlength="9" maxlength="15" inputmode="tel" autocomplete="off"
+                           {% if session.get('user_email') %}readonly{% endif %}>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number 3 (Optional):</label>
+                    <input type="text" name="phones"
+                           value="{{ session.user_phones[2] if session.user_phones|length > 2 else session['booking_data'].get('phones', ['', '', ''])[2] }}"
+                           pattern="\d+" title="Please enter digits only"
+                           minlength="9" maxlength="15" inputmode="tel" autocomplete="off"
+                           {% if session.get('user_email') %}readonly{% endif %}>
+                </div>
+
+            </div>
+        </fieldset>
 
         <div style="text-align: center;">
             <input type="submit" value="Confirm & Review Order" class="btn-large">
