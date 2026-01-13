@@ -185,6 +185,18 @@ class FlightResult:
         self.origin=data_tuple[9]
         self.destination=data_tuple[10]
 
+    @property
+    def formatted_duration(self):
+        try:
+            total_minutes = int(self.duration)
+            hours = total_minutes // 60
+            minutes = total_minutes % 60
+            if hours > 0:
+                return f"{hours}h {minutes}m"
+            return f"{minutes}m"
+        except (ValueError, TypeError):
+            return "N/A"
+
 def get_relevant_flights(date, origin, destination, requested_seats):
     """
     Query the database for active flights matching the criteria.
@@ -321,6 +333,11 @@ def add_booking_to_db(email, first_name, last_name, flight_id, booking_date, boo
                         """, (new_booking_id, aircraft_id, class_type, row, col))
 
         return new_booking_id
+
+def update_flight_status_in_db(flight_id, new_status):
+    with db_cur() as cursor:
+        query = "UPDATE flight SET flight_status = %s WHERE flight_id = %s"
+        cursor.execute(query, (new_status, flight_id))
 
 
 # ----manage_booking functions----

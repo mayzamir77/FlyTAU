@@ -41,7 +41,16 @@
 
                     <div class="form-group">
                         <label for="passport">Passport Number</label>
-                        <input id="passport" placeholder="Passport No." type="text" name="passport_number" maxlength="20" required>
+                        <input id="passport"
+                               placeholder="Passport No."
+                               type="text"
+                               name="passport_number"
+                               pattern="\d{6,20}"
+                               title="Please enter between 6 to 20 digits only"
+                               minlength="6"
+                               maxlength="20"
+                               inputmode="numeric"
+                               required>
                     </div>
 
                     <div class="form-group">
