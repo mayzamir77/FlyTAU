@@ -748,26 +748,36 @@ def add_flight_step3():
     req_pilots = 2 if size == 'Small' else 3
     req_attendants = 3 if size == 'Small' else 6
 
-    # Error Logic: If the manager selected an incorrect amount of staff
-    if len(selected_pilot_ids) != req_pilots or len(selected_attendant_ids) != req_attendants:
+    num_selected_pilots = len(selected_pilot_ids)
+    num_selected_attendants = len(selected_attendant_ids)
+
+    if num_selected_pilots != req_pilots or num_selected_attendants != req_attendants:
+        err_list = []
+        if num_selected_pilots != req_pilots:
+            err_list.append(f"Pilots: {num_selected_pilots}/{req_pilots}")
+        if num_selected_attendants != req_attendants:
+            err_list.append(f"Attendants: {num_selected_attendants}/{req_attendants}")
+
+        full_error_msg = "Wrong selection: " + " & ".join(err_list)
+
         from utils import get_available_pilots, get_available_attendants
         pilots = get_available_pilots(flight_date, origin, destination, departure_time)
         attendants = get_available_attendants(flight_date, origin, destination, departure_time)
 
-        # FIXED: Passing all required variables to avoid UndefinedError in Jinja2
         return render_template('add_flight_3.html',
-                               aircraft={'aircraft_id': aircraft_id, 'size': size},
+                               aircraft={'aircraft_id': aircraft_id, 'size': size,
+                                         'manufacturer': request.form.get('manufacturer')},
                                pilots=pilots,
                                attendants=attendants,
-                               error=f"Selection error: Please select exactly {req_pilots} pilots and {req_attendants} attendants.",
+                               error=full_error_msg,
                                flight_date=flight_date,
                                departure_time=departure_time,
                                origin=origin,
                                destination=destination,
                                size=size,
-                               required_pilots=req_pilots,  # Fix for UndefinedError
-                               required_attendants=req_attendants,  # Fix for UndefinedError
-                               name=user_name  # Keeping the UI consistent
+                               required_pilots=req_pilots,
+                               required_attendants=req_attendants,
+                               name=user_name
                                )
 
     # 5. Database persistence
@@ -953,7 +963,7 @@ def admin_cancel_flight():
     Controller for the flight cancellation confirmation page.
     - Retrieves flight ID from the form.
     - Fetches full flight details for display.
-    - Checks if the flight can be cancelled based on the 72-hour rule.
+    - Checks if the flight can be cancelled based on the 72-hour rule AND status.
     """
     user_type = session.get('user_type')
     if user_type != 'manager':
@@ -962,11 +972,18 @@ def admin_cancel_flight():
         return redirect('/')
     flight_id = request.form.get('flight_number')
 
+    # Check flight existence and status eligibility before proceeding to the cancellation page
+    is_eligible, error_msg = check_flight_cancellation_eligibility(flight_id)
+    if not is_eligible:
+        return render_template('admin_homepage.html',
+                               error=error_msg,
+                               name=session.get('user_first_name'))
+
     # Unpack flight details for the template
     flight_id, flight_status, departure_time, departure_date, \
         origin_airport, destination_airport, aircraft_id = get_flight_details(flight_id)
 
-    # Check cancellation eligibility (True/False based on time remaining)
+    # Check cancellation eligibility (True/False based on time remaining AND status)
     cancel_time = can_cant_cancel_flight(flight_id)
 
     return render_template('cancel_flight.html',
@@ -1001,6 +1018,9 @@ def admin_cancel_flight_confirm():
 
     # Handle related records (e.g., notifying passengers or marking bookings as cancelled)
     cancel_booking(flight_id)
+
+    #Removes all pilots and flight attendants assigned This flight and frees them up to be scheduled for other flights.
+    unassign_crew(flight_id)
 
     return render_template('cancel_flight_confirm.html', flight_id=flight_id)
 

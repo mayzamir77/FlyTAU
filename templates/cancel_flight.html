@@ -23,37 +23,45 @@
         </thead>
         <tbody>
             <tr>
-                <td style="font-weight: bold;">{{ flight_id }}</td>
+                <td style="font-weight: bold;">#{{ flight_id }}</td>
                 <td>
-                    <span class="status-badge {{ 'status-active' if flight_status == 'Scheduled' else 'status-cancelled' }}">
+                    <span class="status-badge status-active">
                         {{ flight_status }}
                     </span>
                 </td>
                 <td>{{ departure_date }} | {{ departure_time }}</td>
                 <td>{{ origin_airport }} ✈ {{ destination_airport }}</td>
-                <td>{{ aircraft_id }}</td>
+                <td>#{{ aircraft_id }}</td>
             </tr>
         </tbody>
     </table>
 
-    <div style="margin-top: 40px; text-align: center;">
+    <div style="margin-top: 30px; text-align: center;">
         <form method="post" action="/admin_cancel_flight/confirm" onsubmit="return confirm('Final warning: Cancel flight {{ flight_id }}?');">
             <input type="hidden" name="flight_number" value="{{ flight_id }}">
 
             {% if cancel_time %}
-                <input type="submit" value="Confirm & Cancel Flight" class="btn-large">
+                <input type="submit" value="Confirm & Cancel Flight" class="btn-filter" style="padding: 10px 25px; background-color: #d73a49; border: none; color: white; cursor: pointer;">
 
-                <p style="color: #d73a49; margin-top: 15px; font-weight: bold; font-size: 0.9rem;">
-                    ⚠ This action will notify passengers and unassign crew.
+                <p style="color: #7f8c8d; margin-top: 15px; font-size: 0.85rem;">
+                    ⚠ Action will notify passengers and unassign crew.
                 </p>
             {% else %}
-                <input type="submit" value="Cancellation Locked" class="btn-large" disabled>
+                <input type="submit" value="Cancellation Locked" class="btn-filter" disabled style="padding: 10px 25px; background-color: #cbd5e0; color: #7f8c8d; cursor: not-allowed; border: none;">
+
+                <p style="color: #7f8c8d; margin-top: 15px; font-weight: bold; font-size: 0.9rem;">
+                    {% if flight_status == 'Cancelled' %}
+                        Status: This flight has already been cancelled.
+                    {% else %}
+                        Policy: The 72-hour cancellation window has passed.
+                    {% endif %}
+                </p>
             {% endif %}
         </form>
     </div>
 
     <div style="text-align: center; margin-top: 30px; padding-bottom: 50px;">
-        <a href="/admin_homepage" class="back-link">← Return to Admin Dashboard</a>
+        <a href="/" class="back-link">← Back to Home Page</a>
     </div>
 </div>
 {% endblock %}
