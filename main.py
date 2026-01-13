@@ -1097,7 +1097,7 @@ def add_staff():
         table = "Pilots" if role == "Pilot" else "Flight_attendants"
 
         add_crew_to_db(table, id, f_name, l_name, phone, city, street, h_num, s_date, is_certified)
-        return redirect('/staff_management')
+        return render_template('staff_added.html')
 
 
 
