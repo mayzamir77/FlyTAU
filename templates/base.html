@@ -12,8 +12,7 @@
 </head>
 <body>
 
-    <!-- HEADER -->
-<header class="main-header">
+    <header class="main-header">
     <div class="header-left">
         {% block header_left %}{% endblock %}
     </div>
@@ -34,9 +33,17 @@
 </header>
 
 
-    <!-- PAGE CONTENT -->
     <main class="page-content">
-        {% block content %}{% endblock %}
+        <div class="container">
+            {% if error %}
+            <div style="background-color: #fff5f5; border: 1px solid #feb2b2; color: #c53030; padding: 15px; border-radius: 8px; margin-top: 20px; margin-bottom: 20px; text-align: center;">
+                <strong style="display: block; font-size: 1.1rem; margin-bottom: 5px;">⚠ Error</strong>
+                {{ error }}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
     </main>
 
 </body>

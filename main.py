@@ -213,7 +213,7 @@ def search_flights():
     result = get_relevant_flights(flight_date,origin, destination, num_seats)
     if not result:
         return render_template('homepage.html', origins=get_flights_origins(),
-                               destinations=get_flights_destinations(),today=date.today().isoformat(), error='No available flights found for the selected criteria.')
+                               destinations=get_flights_destinations(),today=date.today().isoformat(), error='No available flights found for the selected criteria')
     return render_template('show_flights.html', flights=result, requested_seats=num_seats)
 
 

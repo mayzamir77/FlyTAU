@@ -5,62 +5,138 @@
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
+<style>
+    .flight-group-container {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        overflow: hidden;
+        transition: border-color 0.3s ease;
+    }
+
+    .group-header {
+        background-color: #f8fafc;
+        padding: 8px 15px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.95rem;
+        color: #64748b;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .flight-group-container:has(input:checked) {
+        border-color: #1a73e8;
+        box-shadow: 0 0 10px rgba(26, 115, 232, 0.1);
+    }
+
+    /* עיצוב הקו והמטוס האמצעי בלבד */
+    .arrow-line {
+        height: 2px;
+        background: #cbd5e0;
+        position: relative;
+        margin: 5px 0;
+        width: 100%;
+        border: none; /* מבטל מסגרות קודמות */
+    }
+
+    /* המטוס האפור הממורכז */
+    .plane-on-line {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 0 5px;
+        color: #94a3b8; /* צבע אפור למטוס */
+        font-size: 0.9rem;
+    }
+
+    /* ביטול מטוסים אחרים שעלולים להגיע מה-CSS הכללי */
+    .arrow-line::after, .arrow-line::before {
+        display: none !important;
+    }
+
+    .booking-table { width: 100%; border-collapse: collapse; }
+    .booking-table tr { border-bottom: 1px solid #f1f5f9; }
+    .booking-table tr:last-child { border-bottom: none; }
+</style>
+
 <div class="container">
     <h2>Available Flights ({{ requested_seats }} Passengers)</h2>
 
     <form action="/select_seats" method="POST">
         <input type="hidden" name="num_seats" value="{{ requested_seats }}">
 
-        <table class="booking-table">
-            <tbody>
-                {% for flight in flights %}
-                <tr>
-                    <td>
-                        <label style="display: block; cursor: pointer; width: 100%; margin: 0; padding: 0;">
+        {% set grouped = flights|groupby('id') %}
 
-                            <div class="card-main-content">
-                                <div class="flight-timing">
-                                    <input type="radio" name="selected_option"
-                                           value="{{ flight.id }},{{ flight.class_type }},{{flight.aircraft_id}}"
-                                           required>
+        {% for flight_id, options in grouped %}
+        <div class="flight-group-container">
+            <div class="group-header">
+                <span style="font-weight: bold; color: #1a73e8;">
+                    Flight #{{ flight_id }} | {{ options[0].origin }} ✈ {{ options[0].destination }}
+                </span>
+                <strong>Options for this flight:</strong>
+            </div>
 
-                                    <div class="time-block">
-                                        <span class="time">{{ flight.departure_time }}</span>
-                                        <span class="airport-code">{{ flight.origin }}</span>
-                                        <small>{{ flight.departure_date }}</small>
+            <table class="booking-table">
+                <tbody>
+                    {% for flight in options %}
+                    <tr>
+                        <td>
+                            <label style="display: block; cursor: pointer; width: 100%; padding: 15px;">
+                                <div class="card-main-content" style="display: flex; justify-content: space-between; align-items: center;">
+
+                                    <div class="flight-timing" style="display: flex; align-items: center; gap: 20px;">
+                                        <input type="radio" name="selected_option"
+                                               value="{{ flight.id }},{{ flight.class_type }},{{ flight.aircraft_id }}"
+                                               required>
+
+                                        <div class="time-block">
+                                            <span class="time" style="font-size: 1.3rem; font-weight: bold;">
+                                                {{ (flight.departure_time|string)[:5] }}
+                                            </span>
+                                            <small style="display: block; color: #1a73e8; font-weight: bold; font-size: 1rem;">{{ flight.origin }}</small>
+                                        </div>
+
+                                        <div class="flight-duration" style="text-align: center; min-width: 90px;">
+                                            <div style="font-size: 0.75rem; color: #94a3b8;">{{ flight.formatted_duration }}</div>
+                                            <div class="arrow-line">
+                                                <span class="plane-on-line">✈</span>
+                                            </div>
+                                            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: bold;">Direct</div>
+                                        </div>
+
+                                        <div class="time-block">
+                                            <span class="time" style="font-size: 1.3rem; font-weight: bold;">
+                                                {{ (flight.arrival_time|string)[:5] }}
+                                            </span>
+                                            <small style="display: block; color: #1a73e8; font-weight: bold; font-size: 1rem;">{{ flight.destination }}</small>
+                                        </div>
                                     </div>
 
-                                    <div class="flight-duration">
-                                        <div class="duration-text">Direct</div>
-                                        <div class="arrow-line"></div>
-                                        <div class="duration-text">{{ flight.formatted_duration }}</div>
+                                    <div class="class-info" style="text-align: center; flex-grow: 1;">
+                                        <span class="status-badge {{ 'status-active' if flight.class_type == 'Business' else 'status-scheduled' }}"
+                                              style="padding: 8px 20px; border-radius: 10px; font-weight: 900; font-size: 1rem; text-transform: uppercase;">
+                                            {{ flight.class_type }}
+                                        </span>
                                     </div>
 
-                                    <div class="time-block">
-                                        <span class="time">{{ flight.arrival_time }}</span>
-                                        <span class="airport-code">{{ flight.destination }}</span>
-                                        <small>{{ flight.arrival_date }}</small>
+                                    <div class="price-section" style="text-align: right;">
+                                        <div class="price" style="font-size: 1.5rem; font-weight: bold; color: #1a73e8;">
+                                            ${{ flight.price * requested_seats|int }}
+                                        </div>
+                                        <small style="color: #64748b; display: block; font-weight: 600;">Total for {{ requested_seats }}</small>
+                                        <small style="color: #64748b; font-size: 0.75rem; font-weight: bold;">(${{ flight.price }} per seat)</small>
                                     </div>
                                 </div>
-
-                                <div class="flight-price-section">
-                                    <div class="price-tag">${{ flight.price * requested_seats|int }}</div>
-                                    <small style="display:block; color:#95a5a6;">Total Price</small>
-                                </div>
-                            </div>
-
-                            <div class="info-footer">
-                                <span><strong>Class:</strong> {{ flight.class_type }}</span>
-                                <span><strong>Flight ID:</strong> #{{ flight.id }}</span>
-                                <span><strong>Aircraft:</strong> {{ flight.aircraft_id }}</span>
-                                <span><strong>Price per seat:</strong> ${{ flight.price }}</span>
-                            </div>
-                        </label>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                            </label>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
 
         <div style="text-align: center; margin-top: 30px;">
             <button type="submit" class="btn-filter" style="font-size: 1.1rem; padding: 15px 40px; border-radius: 50px;">
@@ -69,7 +145,7 @@
         </div>
     </form>
 
-    <div style="text-align: center; margin-top: 20px;">
+    <div style="text-align: center; margin-top: 20px; padding-bottom: 40px;">
         <a href="/" class="back-link">← Back to Search</a>
     </div>
 </div>
