@@ -76,7 +76,13 @@
     {% endif %}
 
     <div style="text-align: center; margin-top: 30px; padding-bottom: 50px;">
-        <a href="/" class="back-link">← Back to Home Page</a>
+        {% if user_type == 'manager' %}
+            <a href="/" class="back-link">← Back to Home Page</a>
+        {% else %}
+            <a href="/" class="btn-large" style="text-decoration: none; display: inline-block; width: auto; padding: 12px 30px;">
+                Ready to fly? Book Your Flight Now →
+            </a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

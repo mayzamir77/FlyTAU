@@ -21,13 +21,6 @@
         </div>
     </div>
 
-    {% if error %}
-    <div style="background-color: #fff5f5; border: 1px solid #feb2b2; color: #c53030; padding: 15px; border-radius: 8px; margin-top: 25px; text-align: center;">
-        <strong style="display: block; font-size: 1.1rem; margin-bottom: 5px;">⚠ Selection Error</strong>
-        {{ error }}
-    </div>
-    {% endif %}
-
     <form action="/add_flight_step3" method="POST" style="margin-top: 30px;">
         <input type="hidden" name="flight_date" value="{{ flight_date }}">
         <input type="hidden" name="departure_time" value="{{ departure_time }}">
