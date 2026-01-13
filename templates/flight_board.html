@@ -1,57 +1,66 @@
-
 {% extends "base.html" %}
 
 {% block title %}Flight Board{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 
-    <div class="container">
-        {% if user_type == 'manager' %}
-            <h1>Flight Board - Management View</h1>
-            <div class="filter-section">
-                <form action="/flight_board" method="GET">
-                    <label for="status">Filter by Status:</label>
-                    <select name="status" id="status">
-                        <option value="All" {% if current_status == 'All' %}selected{% endif %}>Show All</option>
-                        <option value="Active" {% if current_status == 'Active' %}selected{% endif %}>Active</option>
-                        <option value="Cancelled" {% if current_status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
-                        <option value="Fully Booked" {% if current_status == 'Fully Booked' %}selected{% endif %}>Fully Booked</option>
-                        <option value="Completed" {% if current_status == 'Completed' %}selected{% endif %}>Completed</option>
-                    </select>
-                    <button type="submit" class="btn-filter">Filter</button>
-                </form>
+<div class="container">
+    {% if user_type == 'manager' %}
+        <h2 style="margin-bottom: 10px;">Flight Board</h2>
+        <p style="text-align: center; color: #7f8c8d; margin-bottom: 30px;">Monitor and manage all scheduled, completed, and cancelled flights</p>
+
+        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 25px;">
+            <div style="display: flex; gap: 10px; background: #f1f5f9; padding: 5px; border-radius: 8px;">
+                {% set statuses = [('All', 'Show All'), ('Active', 'Active'), ('Cancelled', 'Cancelled'), ('Fully Booked', 'Fully Booked'), ('Completed', 'Completed')] %}
+                
+                {% for status_val, status_label in statuses %}
+                    <a href="/flight_board?status={{ status_val }}" 
+                       class="btn-filter" 
+                       style="background: {{ '#1a73e8' if current_status == status_val else '#fff' }}; 
+                              color: {{ '#fff' if current_status == status_val else '#475569' }}; 
+                              padding: 8px 15px; 
+                              font-size: 0.9rem; 
+                              text-decoration: none; 
+                              border-radius: 6px;
+                              transition: all 0.2s;">
+                        {{ status_label }}
+                    </a>
+                {% endfor %}
             </div>
-        {% else %}
-            <h1>Available Flights</h1>
-        {% endif %}
+        </div>
+    {% else %}
+        <h2 style="margin-bottom: 30px;">Available Flights</h2>
+    {% endif %}
 
-
-        {% if flights %}
+    {% if flights %}
+        <div style="overflow-x: auto;">
             <table class="flight-table">
                 <thead>
                     <tr>
                         <th>Flight ID</th>
                         <th>Date</th>
                         <th>Time</th>
-                        <th>From</th>
-                        <th>To</th>
+                        <th>Route</th>
                         <th>Aircraft</th>
-                        <th>Price</th>
+                        <th>Starting Price</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for flight in flights %}
                     <tr>
-                        <td>{{ flight[0] }}</td>
+                        <td style="font-weight: bold;">#{{ flight[0] }}</td>
                         <td>{{ flight[1] }}</td>
                         <td>{{ flight[2] }}</td>
-                        <td>{{ flight[3] }}</td>
-                        <td>{{ flight[4] }}</td>
-                        <td>{{ flight[5] }}</td>
-                        <td>${{ flight[6] }}</td>
                         <td>
-                            <span class="status-badge status-{{ flight[7]|lower }}">
+                            <div style="font-weight: 600;">{{ flight[3] }} ✈ {{ flight[4] }}</div>
+                        </td>
+                        <td>#{{ flight[5] }}</td>
+                        <td style="font-weight: bold; color: #27ae60;">${{ flight[6] }}</td>
+                        <td>
+                            {# שימוש בבאדג' הסטטוס המקורי שלנו #}
+                            <span class="status-badge status-{{ flight[7]|lower|replace(' ', '-') }}">
                                 {{ flight[7] }}
                             </span>
                         </td>
@@ -59,14 +68,15 @@
                     {% endfor %}
                 </tbody>
             </table>
-        {% else %}
-            <p class="no-flights">No active flights available at the moment.</p>
-        {% endif %}
-
-
-
-        <div class="footer-links">
-            <a href="/" class="back-link">Back to Menu</a>
         </div>
+    {% else %}
+        <div class="summary-card" style="padding: 40px; text-align: center; color: #7f8c8d; margin-top: 20px;">
+            <p style="font-size: 1.2rem;">No flights found for the selected status.</p>
+        </div>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 30px; padding-bottom: 50px;">
+        <a href="/" class="back-link">← Back to Home Page</a>
     </div>
+</div>
 {% endblock %}

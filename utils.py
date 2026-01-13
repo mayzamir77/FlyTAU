@@ -1315,16 +1315,47 @@ def add_seats_for_class(aircraft_id, class_type, num_rows, num_cols, start_row):
 
 
 # ----admin_cancel_flight functions----
+def check_flight_cancellation_eligibility(flight_id):
+    """
+    Checks if a flight exists and if its status allows for cancellation.
+    Returns: (is_eligible, error_message)
+    """
+    with db_cur() as cursor:
+        cursor.execute("SELECT flight_status FROM flight WHERE flight_id = %s", (flight_id,))
+        result = cursor.fetchone()
+
+        if not result:
+            return False, f"Flight #{flight_id} does not exist in the system."
+
+        status = result[0]
+
+        if status == 'Cancelled':
+            return False, f"Flight #{flight_id} is already cancelled."
+
+        if status == 'Completed':
+            return False, f"Flight #{flight_id} has already been completed and cannot be cancelled."
+
+        return True, None
 
 def can_cant_cancel_flight(flight_id):
     """
-    Business logic: Checks if a flight is more than 72 hours away.
+    Checks if a flight can be cancelled based on two conditions:
+    1. Flight status is not already 'Cancelled'.
+    2. Departure is more than 72 hours away.
     Returns True if cancellation is allowed, False otherwise.
     """
     with db_cur() as cursor:
-        cursor.execute('''SELECT departure_time, departure_date 
+        cursor.execute('''SELECT departure_time, departure_date, flight_status 
                           FROM flight WHERE flight_id=%s''', (flight_id,))
-        departure_time, departure_date = cursor.fetchone()
+        result = cursor.fetchone()
+
+        if not result:
+            return False  # Flight doesn't exist
+
+        departure_time, departure_date, status = result
+
+        if status == 'Cancelled':
+            return False
 
         # Normalize time and calculate the difference from 'now'
         time_obj = normalize_time(departure_time)
@@ -1359,17 +1390,27 @@ def cancel_booking(flight_id):
     """
     Handles mass cancellation of all bookings associated with a specific flight.
     - Sets booking_status to 'System Cancellation' for all active bookings.
-    - Resets payment to 0.00 as the flight is no longer operational.
-    - Only affects bookings that haven't been cancelled already.
+    - Resets payment to 0.00 only for passengers who didn't cancel themselves.
+    - Preserves cancellation fees for customers who already cancelled (Client Cancellation).
     """
     with db_cur() as cursor:
-        # Updates all related bookings to reflect the system-wide cancellation
         cursor.execute("""
             UPDATE booking 
             SET booking_status = 'System Cancellation', 
                 payment = 0.00 
-            WHERE flight_id = %s AND booking_status != 'System Cancellation'
+            WHERE flight_id = %s 
+            AND booking_status NOT IN ('System Cancellation', 'Customer Cancellation')
         """, (flight_id,))
+
+
+def unassign_crew(flight_id):
+    """
+    Removes all pilots and flight attendants assigned to a specific flight.
+    This frees them up to be scheduled for other flights.
+    """
+    with db_cur() as cursor:
+        cursor.execute("DELETE FROM pilots_assignment WHERE flight_id = %s", (flight_id,))
+        cursor.execute("DELETE FROM flight_attendants_assignment WHERE flight_id = %s", (flight_id,))
 
 # ----staff_management functions----
 
