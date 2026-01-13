@@ -380,11 +380,19 @@ def confirm_booking():
     order_id = add_booking_to_db(email, first_name, last_name, flight_id, booking_date,
                                  booking_status, payment, aircraft_id, class_type, seats, phones)
 
+    vacant_seats = get_vacant_seats(flight_id)
+    if not vacant_seats:
+        update_flight_status_in_db(flight_id, 'Fully Booked')
+
     # Clean up: Remove booking data from session after successful save
     session.pop('booking_data', None)
 
-    return render_template('booking_success.html', order_id=order_id, first_name=first_name,last_name=last_name)
-
+    return render_template('booking_success.html',
+                           order_id=order_id,
+                           first_name=first_name,
+                           last_name=last_name,
+                           flight_id=flight_id,
+                           selected_seats=seats)
 
 
 #----Booking Management Interface----
@@ -480,11 +488,16 @@ def cancel_booking_request():
 
     # Fetch booking data and calculate the 5% penalty fee
     booking = get_booking_details(booking_id, email)
+    if not booking:
+        return redirect('/')
+    flight_id = booking.flight_id
+
     payment = booking.payment
     cancellation_fee = calculate_cancellation_fee(payment)
 
     # Perform the update in the database
     cancel_booking_in_db(booking_id, cancellation_fee)
+    update_flight_status_in_db(flight_id, 'Active')
 
     return render_template(
         'booking_cancelled.html',

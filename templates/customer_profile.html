@@ -49,7 +49,8 @@
                     <div class="form-group">
                         <label for="passport">Passport Number</label>
                         <input type="text" id="passport" name="passport" value="{{ user.passport }}"
-                               maxlength="20" required placeholder="Enter passport number">
+                               pattern="\d{6,20}" title="Please enter between 6 to 20 digits only"
+                               minlength="6" maxlength="20" inputmode="numeric" required placeholder="Enter passport number">
                     </div>
                 </div>
             </fieldset>
@@ -60,17 +61,18 @@
                     <div class="form-group">
                         <label>Primary Phone</label>
                         <input type="text" name="phones" value="{{ user.phones[0] if user.phones|length > 0 else '' }}"
-                               minlength="9" maxlength="15" pattern="\d+" title="Please enter at least 9 digits" required>
+                               minlength="9" maxlength="15" pattern="\d+" title="Please enter between 9 to 15 digits"
+                               inputmode="tel" required>
                     </div>
                     <div class="form-group">
                         <label>Secondary Phone (Optional)</label>
                         <input type="text" name="phones" value="{{ user.phones[1] if user.phones|length > 1 else '' }}"
-                               pattern="\d+" minlength="9" maxlength="15">
+                               pattern="\d+" title="Please enter digits only" minlength="9" maxlength="15" inputmode="tel">
                     </div>
                     <div class="form-group">
                         <label>Additional Phone (Optional)</label>
                         <input type="text" name="phones" value="{{ user.phones[2] if user.phones|length > 2 else '' }}"
-                               pattern="\d+" minlength="9" maxlength="15">
+                               pattern="\d+" title="Please enter digits only" minlength="9" maxlength="15" inputmode="tel">
                     </div>
                 </div>
             </fieldset>
@@ -79,7 +81,6 @@
                 <button type="submit" class="btn-large" style="max-width: 300px;">Save Changes</button>
             </div>
         </form>
-
         <div style="text-align: center;">
             <a href="/" class="back-link">← Back to Homepage</a>
         </div>
