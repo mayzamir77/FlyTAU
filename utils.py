@@ -1145,12 +1145,34 @@ def create_new_flight_complete(f_data, pilot_ids, attendant_ids, prices):
                     VALUES (%s, %s, 'business', %s)
                 """, (new_flight_id, f_data['aircraft_id'], prices['business']))
 
-            return True
+            return new_flight_id
 
     except Exception as e:
         print(f"Error creating complete flight: {e}")
         # If an error occurs, the transaction will not commit (depending on connection settings)
         return False
+
+
+def log_manager_action(manager_id, flight_id, action_type):
+    """
+    Records a manager's action (Add/Cancel) in the manager_flight_actions table.
+
+    Args:
+        manager_id (str): The ID of the manager performing the action.
+        flight_id (int): The affected flight ID.
+        action_type (str): Either 'Add' or 'Cancel'.
+    """
+    query = """
+    INSERT INTO manager_flight_actions (manager_id, flight_id, action_type, action_date)
+    VALUES (%s, %s, %s, %s)
+    """
+    # Use the current date for the logging entry
+    today = date.today().isoformat()
+    try:
+        with db_cur() as cursor:
+            cursor.execute(query, (manager_id, flight_id, action_type, today))
+    except Exception as e:
+        print(f"Error logging manager action: {e}")
 
 # ----show_flight_board functions----
 
