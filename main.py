@@ -804,8 +804,13 @@ def add_flight_step3():
         'size': size
     }
 
-    if create_new_flight_complete(f_data, selected_pilot_ids, selected_attendant_ids, prices):
+    new_flight_id = create_new_flight_complete(f_data,selected_pilot_ids,selected_attendant_ids,prices)
+    if new_flight_id:
+
+        log_manager_action(session.get('user_id'), new_flight_id, 'Add')
         p_info, a_info = get_crew_names_by_ids(selected_pilot_ids, selected_attendant_ids)
+
+
 
         return render_template('add_flight_confirm.html',
                                origin=origin, destination=destination, date=flight_date, time=departure_time,
@@ -1034,6 +1039,8 @@ def admin_cancel_flight_confirm():
 
     #Removes all pilots and flight attendants assigned This flight and frees them up to be scheduled for other flights.
     unassign_crew(flight_id)
+
+    log_manager_action(session.get('user_id'), int(flight_id), 'Cancel')
 
     return render_template('cancel_flight_confirm.html', flight_id=flight_id)
 
