@@ -1175,12 +1175,10 @@ def report_fleet_activity():
     if session.get('user_type') != 'manager':
         return redirect('/')
 
-    # קבלת ערכי הפילטרים מהטופס (GET request)
     aircraft_id = request.args.get('aircraft_id')
     year = request.args.get('year')
     month = request.args.get('month')
 
-    # קבלת הנתונים המעובדים מה-DB
     data = get_fleet_activity_report(aircraft_id, year, month)
 
     return render_template('fleet_activity_report.html',
