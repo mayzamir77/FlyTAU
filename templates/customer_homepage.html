@@ -22,91 +22,96 @@
 
 {% block content %}
 
-<!-- HERO -->
-<div class="homepage-hero">
-    <h1>Welcome back, {{ name }}!</h1>
-</div>
+<!-- 👇 עטיפה ייעודית ללקוח רשום -->
+<div class="customer-homepage">
 
-{% if error %}
-    <p style="color:red;">{{ error }}</p>
-{% endif %}
-
-<!-- MAIN CONTENT: SEARCH + MANAGE -->
-<div class="homepage-main">
-
-    <!-- SEARCH FLIGHT -->
-    <div class="search-card">
-        <h3>Search for a Flight</h3>
-
-        <form action="/search_flights" method="POST">
-
-            <div class="form-field">
-                <label>Date:</label>
-                <input type="date" name="flight_date" min="{{ today }}" required>
-            </div>
-
-            <div class="form-field">
-                <label>From:</label>
-                <select name="origin">
-                    {% for origin in origins %}
-                        <option value="{{ origin[0] }}">{{ origin[0] }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-field">
-                <label>To:</label>
-                <select name="destination">
-                    {% for dest in destinations %}
-                        <option value="{{ dest[0] }}">{{ dest[0] }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-field">
-                <label>Passengers:</label>
-                <input
-                    type="number"
-                    name="num_seats"
-                    min="1"
-                    max="6"
-                    value="1"
-                    required
-                >
-            </div>
-
-            <input type="submit" value="Search Flights">
-
-            <!-- FLIGHT BOARD LINK -->
-            <div class="search-footer-link">
-                <a href="/flight_board">
-                    Not sure where to fly? View our Flight Board
-                </a>
-            </div>
-
-        </form>
+    <!-- HERO -->
+    <div class="homepage-hero">
+        <h1>Welcome back, {{ name }}!</h1>
     </div>
 
-    <!-- MANAGE BOOKING -->
-    <div class="manage-card">
-        <h3>Manage my Booking</h3>
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
 
-        <form action="/manage_booking" method="POST">
+    <!-- MAIN CONTENT: SEARCH + MANAGE -->
+    <div class="homepage-main">
 
-            <div class="form-field">
-                <label>Booking ID</label>
-                <input
-                    type="text"
-                    name="booking_ID"
-                    autocomplete="off"
-                    required
-                >
-            </div>
+        <!-- SEARCH FLIGHT -->
+        <div class="search-card">
+            <h3>Search for a Flight</h3>
 
-            <input type="submit" value="To my Booking">
-        </form>
+            <form action="/search_flights" method="POST">
+
+                <div class="form-field">
+                    <label>Date:</label>
+                    <input type="date" name="flight_date" min="{{ today }}" required>
+                </div>
+
+                <div class="form-field">
+                    <label>From:</label>
+                    <select name="origin">
+                        {% for origin in origins %}
+                            <option value="{{ origin[0] }}">{{ origin[0] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label>To:</label>
+                    <select name="destination">
+                        {% for dest in destinations %}
+                            <option value="{{ dest[0] }}">{{ dest[0] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label>Passengers:</label>
+                    <input
+                        type="number"
+                        name="num_seats"
+                        min="1"
+                        max="6"
+                        value="1"
+                        required
+                    >
+                </div>
+
+                <input type="submit" value="Search Flights">
+
+                <!-- FLIGHT BOARD LINK -->
+                <div class="search-footer-link">
+                    <a href="/flight_board">
+                        Not sure where to fly? View our Flight Board
+                    </a>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- MANAGE BOOKING -->
+        <div class="manage-card">
+            <h3>Manage my Booking</h3>
+
+            <form action="/manage_booking" method="POST">
+
+                <div class="form-field">
+                    <label>Booking ID</label>
+                    <input
+                        type="text"
+                        name="booking_ID"
+                        autocomplete="off"
+                        required
+                    >
+                </div>
+
+                <input type="submit" value="To my Booking">
+            </form>
+        </div>
+
     </div>
 
-</div>
+</div> <!-- סוף customer-homepage -->
 
 {% endblock %}

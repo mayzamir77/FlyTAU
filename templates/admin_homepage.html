@@ -1,32 +1,85 @@
 {% extends "base.html" %}
 
-{% block title %}admin homepage{% endblock %}
+{% block title %}Admin Homepage{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin_homepage.css') }}">
+{% endblock %}
+
+{% block header_right %}
+    <a href="/logout">Logout</a>
+{% endblock %}
 
 {% block content %}
 
-<h1>HELLO {{ name }}</h1>
+<div class="page-content">
 
+    <!-- Welcome -->
+    <section class="welcome-box">
+        <h1>Hello {{ name }}</h1>
+    </section>
 
-<nav>
-    <a href="/logout">Logout</a> |
-    <a href="/flight_board">Flight Board</a> |
-    <a href="/add_flight_step1">Add Flight</a> |
-    <a href="/admin_homepage?show_cancel=true">Cancel Flight</a> |
-    <a href="/aircraft_management">Aircraft Management</a> |
-    <a href="/staff_management">Staff Management</a>
-</nav>
+    <div class="admin-top-grid">
 
-{% if show_cancel %}
-<div>
-    <h2>Cancel a Flight</h2>
-    <form action="/admin_cancel_flight" method="post">
-        <label for="flight_number">Flight Number:</label>
-        <input type="text" id="flight_number" name="flight_number" required>
-        <button type="submit">Submit</button>
-    </form>
+    <!-- Operations -->
+    <section class="admin-section">
+        <h2>Operations</h2>
+
+        <div class="admin-actions two-cards">
+
+            <a href="/add_flight_step1" class="admin-card compact">
+                Add Flight
+            </a>
+
+            <div class="admin-card cancel-card compact">
+                <h3>Cancel Flight</h3>
+                <form action="/admin_cancel_flight" method="post">
+                    <input
+                        type="text"
+                        name="flight_number"
+                        placeholder="Flight Number"
+                        required
+                    >
+                    <button type="submit">Cancel</button>
+                </form>
+            </div>
+
+        </div>
+
+        <div class="admin-secondary-link">
+            To view all company flights,
+            <a href="/flight_board">click here</a>
+        </div>
+    </section>
+
+    <!-- Management -->
+    <section class="admin-section">
+        <h2>Management</h2>
+
+        <div class="admin-actions two-cards">
+            <a href="/aircraft_management" class="admin-card compact">
+                Aircraft Management
+            </a>
+            <a href="/staff_management" class="admin-card compact">
+                Staff Management
+            </a>
+        </div>
+    </section>
+
 </div>
-{% endif %}
 
-<hr>
+
+    <!-- Insights -->
+    <section class="admin-section">
+        <h2>Company Performance & Analytics</h2>
+
+        <div class="admin-actions insights-actions">
+            <a href="/management_reports" class="admin-card highlight">
+                Management Reports
+            </a>
+        </div>
+    </section>
+
+</div>
 
 {% endblock %}

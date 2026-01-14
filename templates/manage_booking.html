@@ -57,7 +57,7 @@
             {% if can_cancel %}
                 <p style="font-size: 1.1rem; margin-bottom: 20px;">
                     You can still cancel this booking <br>
-                    <strong>Cancellation fee: ${{ cancellation_fee }}</strong>
+                    <strong>Cancellation fee: ${{ cancellation_fee }} (5% of the order payment)</strong>
                 </p>
 
                 <form method="POST" action="/cancel_booking_request"
