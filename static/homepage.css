@@ -26,6 +26,14 @@ body {
 }
 
 /* =========================
+   CUSTOMER HOMEPAGE ONLY
+   ========================= */
+
+.customer-homepage .homepage-hero h1 {
+    color: #7a1f2b;
+}
+
+/* =========================
    TOP BUTTONS (HOMEPAGE ONLY)
    ========================= */
 .homepage-top-buttons {

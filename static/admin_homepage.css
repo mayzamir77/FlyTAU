@@ -1,0 +1,220 @@
+/* =========================
+   ADMIN HOMEPAGE
+   ========================= */
+
+.page-content {
+    padding-top: 12px;
+}
+
+/* =========================
+   WELCOME BOX
+   ========================= */
+
+.welcome-box {
+    background: white;
+    padding: 16px 20px;
+    border-radius: 18px;
+
+    margin: 0 auto 28px;
+    max-width: 1100px;
+
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+}
+
+.welcome-box h1 {
+    font-size: 36px;
+    color: #1f5f4a;
+    margin: 0;
+}
+
+/* =========================
+   TOP GRID (Operations + Management)
+   ========================= */
+
+.admin-top-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+
+    max-width: 1100px;
+    margin: 0 auto 24px; /* 🔽 עוד קירוב ל-Insights */
+}
+
+/* =========================
+   CATEGORY SECTIONS
+   ========================= */
+
+.admin-section {
+    background: white;
+
+    padding: 22px 32px 26px; /* 🔽 מעט נמוך יותר */
+    margin: 0 auto 28px;     /* 🔽 רווח קטן יותר בין אזורים */
+    max-width: 1100px;
+
+    border-top: 5px solid #1e6fa3;
+    border-radius: 0 18px 18px 18px;
+
+    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+}
+
+.admin-section h2 {
+    margin-bottom: 20px;
+    color: #0b3c5d;
+    font-size: 26px;
+}
+
+/* =========================
+   ACTIONS GRID
+   ========================= */
+
+.admin-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 26px;
+}
+
+/* =========================
+   GENERIC ADMIN CARD
+   ========================= */
+
+.admin-card {
+    background: white;
+    padding: 24px 28px;
+    border-radius: 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    font-size: 18px;
+    font-weight: 600;
+    color: #0b3c5d;
+
+    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.14);
+}
+
+/* =========================
+   CANCEL FLIGHT – FINAL FINAL
+   ========================= */
+
+.cancel-card {
+    background: white;
+    padding: 24px 28px;
+    border-radius: 18px;
+
+    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* כותרת – זהה ל-Add Flight */
+.cancel-card h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #0b3c5d;
+    text-align: center;
+}
+
+/* שורה אחת: input + button */
+.cancel-card form {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+}
+
+/* שדה קלט */
+.cancel-card input {
+    width: 140px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #cfd9e0;
+    font-size: 15px;
+}
+
+/* כפתור */
+.cancel-card button {
+    background-color: #1e6fa3;
+    color: white;
+
+    border: none;
+    padding: 12px 18px;
+    border-radius: 10px;
+
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cancel-card button:hover {
+    background-color: #164f78;
+}
+
+
+
+/* =========================
+   SECONDARY LINK
+   ========================= */
+
+.admin-secondary-link {
+    margin-top: 12px;
+    font-size: 15px;
+    color: #4a5d6b;
+}
+
+.admin-secondary-link a {
+    color: #1e6fa3;
+    font-weight: 600;
+    margin-left: 4px;
+    text-decoration: none;
+}
+
+.admin-secondary-link a:hover {
+    text-decoration: underline;
+}
+
+/* =========================
+   INSIGHTS
+   ========================= */
+
+.insights-section {
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.insights-section h2 {
+    text-align: center;
+}
+
+.insights-section .admin-actions {
+    display: flex;
+    justify-content: center;
+}
+
+/* 🔼 הרחבת כפתור ניהול הדוחות */
+.insights-section .admin-card {
+    width: 820px;      /* ⬅️ רחב יותר */
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* =========================
+   INSIGHTS CENTERING FIX
+   ========================= */
+
+.insights-actions {
+    display: flex;
+    justify-content: center;
+}
