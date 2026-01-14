@@ -1659,7 +1659,6 @@ def get_cancellation_report():
 def get_fleet_activity_report(f_aircraft=None, f_year=None, f_month=None):
     """
     Summarizes monthly activity and usage efficiency for the entire aircraft fleet.
-    Includes filtering by Aircraft ID, Year, and Month.
     """
     query = """
     WITH months AS (
@@ -1712,9 +1711,9 @@ def get_fleet_activity_report(f_aircraft=None, f_year=None, f_month=None):
     SELECT * FROM (
         SELECT
             am.aircraft_id, am.year, am.month,
-            ma.completed_flights, ma.cancelled_flights, ma.active_days,
+            ma.completed_flights, ma.cancelled_flights,
             ROUND(COALESCE(ma.active_days, 0) * 100.0 / 30, 2) AS utilization_percentage,
-            dr.origin_airport, dr.destination_airport
+            CONCAT(dr.origin_airport, ' -> ', dr.destination_airport) AS dominant_route
         FROM aircraft_months am
         LEFT JOIN monthly_activity ma ON am.aircraft_id = ma.aircraft_id AND am.year = ma.year AND am.month = ma.month
         LEFT JOIN dominant_routes dr ON am.aircraft_id = dr.aircraft_id AND am.year = dr.year AND am.month = dr.month
