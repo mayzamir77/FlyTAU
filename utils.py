@@ -1502,6 +1502,9 @@ def is_id_exists(staff_id):
         cursor.execute("SELECT attendant_id FROM Flight_attendants WHERE attendant_id = %s", (staff_id,))
         if cursor.fetchone():
             return True
+        cursor.execute("SELECT manager_id FROM managers WHERE manager_id = %s", (staff_id,))
+        if cursor.fetchone():
+            return True
 
     return False
 
