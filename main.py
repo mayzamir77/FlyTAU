@@ -174,7 +174,7 @@ def signup():
 
 
     if registered_customer_exists(email):
-        return render_template('signup.html', error="This email is taken",today=date.today().isoformat())
+        return render_template('signup.html', disable_global_error=True, error="This email is taken",today=date.today().isoformat())
 
     if guest_customer_exists(email):
         # Convert an existing guest customer to a registered member
@@ -299,7 +299,7 @@ def review_order():
     if registered_customer_exists(email) and session.get('user_email') != email:
         # Save where the user was so they can return after logging in
         session['next_url'] = '/passenger_details_after_login'
-        return render_template('passenger_details.html',
+        return render_template('passenger_details.html', disable_global_error=True,
                                seats=booking.get('selected_seats'),
                                error=f"the email {email} is already registered.")
 
