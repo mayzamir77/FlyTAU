@@ -1100,6 +1100,89 @@ def add_staff():
         return render_template('staff_added.html')
 
 
+# --- Management Reports Routes ---
+
+@app.route('/reports/flight_occupancy')
+def report_occupancy():
+    '''
+    Route to display flight occupancy analytics.
+    '''
+    if session.get('user_type') != 'manager':
+        return redirect('/')
+
+    data = get_flight_occupancy_report()
+    return render_template('occupancy_report.html',
+                           title="Flight Occupancy Analysis",
+                           headers=['Flight ID', 'Occupancy Percentage (%)'],
+                           rows=data,
+                           keys=['flight_id', 'occupancy_percentage'])
+
+
+@app.route('/reports/revenue_analysis')
+def report_revenue():
+    '''
+    Route to display financial revenue reports.
+    '''
+    if session.get('user_type') != 'manager':
+        return redirect('/')
+
+    data = get_revenue_report()
+    return render_template('revenue_report.html',
+                           title="Revenue Analysis",
+                           headers=['Size', 'Manufacturer', 'Class', 'Total Revenue'],
+                           rows=data,
+                           keys=['Size', 'Manufacturer', 'Class', 'Revenue'])
+
+
+@app.route('/reports/staff_hours')
+def report_staff_hours():
+    '''
+    Route to manage and display crew flight hour accumulation.
+    '''
+    if session.get('user_type') != 'manager':
+        return redirect('/')
+
+    data = get_staff_hours_report()
+    return render_template('staff_hours_report.html',
+                           title="Staff Flight Hours Summary",
+                           headers=['Employee ID', 'Full Name', 'Role', 'Work Type', 'Total Hours'],
+                           rows=data,
+                           keys=['employee_id', 'full_name', 'role', 'work_type', 'total_hours'])
+
+
+@app.route('/reports/cancellation_rates')
+def report_cancellations():
+    '''
+    Route to monitor booking cancellation rates over time.
+    '''
+    if session.get('user_type') != 'manager':
+        return redirect('/')
+
+    data = get_cancellation_report()
+    return render_template('cancellation_report.html',
+                           title="Purchase Cancellation Trends",
+                           headers=['Year', 'Month', 'Cancelled Bookings', 'Total Bookings', 'Cancellation Rate (%)'],
+                           rows=data,
+                           keys=['year', 'month', 'cancelled_bookings', 'total_bookings',
+                                 'cancellation_rate_percentage'])
+
+
+@app.route('/reports/fleet_activity')
+def report_fleet_activity():
+    '''
+    Route to display comprehensive fleet utilization and activity logs.
+    '''
+    if session.get('user_type') != 'manager':
+        return redirect('/')
+
+    data = get_fleet_activity_report()
+    return render_template('fleet_activity_report.html',
+                           title="Fleet Monthly Activity & Utilization",
+                           headers=['Aircraft ID', 'Year', 'Month', 'Completed', 'Cancelled', 'Dominant Origin',
+                                    'Dominant Dest', 'Utilization (%)'],
+                           rows=data,
+                           keys=['aircraft_id', 'year', 'month', 'completed_flights', 'cancelled_flights',
+                                 'origin_airport', 'destination_airport', 'utilization_percentage'])
 
 if __name__=="__main__":
     app.run(debug=True)
