@@ -29,17 +29,17 @@
         box-shadow: 0 0 10px rgba(26, 115, 232, 0.1);
     }
 
-    /* עיצוב הקו והמטוס האמצעי בלבד */
+
     .arrow-line {
         height: 2px;
         background: #cbd5e0;
         position: relative;
         margin: 5px 0;
         width: 100%;
-        border: none; /* מבטל מסגרות קודמות */
+        border: none;
     }
 
-    /* המטוס האפור הממורכז */
+
     .plane-on-line {
         position: absolute;
         top: 50%;
@@ -47,11 +47,11 @@
         transform: translate(-50%, -50%);
         background: white;
         padding: 0 5px;
-        color: #94a3b8; /* צבע אפור למטוס */
+        color: #94a3b8;
         font-size: 0.9rem;
     }
 
-    /* ביטול מטוסים אחרים שעלולים להגיע מה-CSS הכללי */
+
     .arrow-line::after, .arrow-line::before {
         display: none !important;
     }

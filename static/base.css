@@ -54,8 +54,8 @@ a {
     display: flex;
     gap: 14px;
 
-    min-width: 220px;      /* 🔥 מונע מחיצה */
-    white-space: nowrap;  /* 🔥 מונע ירידת שורה */
+    min-width: 220px;
+    white-space: nowrap;
 }
 
 .header-left {
@@ -82,8 +82,8 @@ a {
     font-size: 14px;
     font-weight: 600;
 
-    line-height: 1;        /* 🔥 מונע קפיצות גובה */
-    white-space: nowrap;  /* 🔥 חשוב */
+    line-height: 1;
+    white-space: nowrap;
 
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.1s ease;
@@ -110,7 +110,7 @@ a {
 }
 
 .site-logo {
-    height:130px;   /* 🔥 תואם לגובה header */
+    height:130px;
     width: auto;
     display: block;
 }
@@ -119,4 +119,3 @@ a {
     transform: scale(1.03);
     transition: transform 0.2s ease;
 }
-
