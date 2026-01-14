@@ -38,7 +38,7 @@
     gap: 48px;
 
     max-width: 1100px;
-    margin: 0 auto 24px; /* 🔽 עוד קירוב ל-Insights */
+    margin: 0 auto 24px;
 }
 
 /* =========================
@@ -48,8 +48,8 @@
 .admin-section {
     background: white;
 
-    padding: 22px 32px 26px; /* 🔽 מעט נמוך יותר */
-    margin: 0 auto 28px;     /* 🔽 רווח קטן יותר בין אזורים */
+    padding: 22px 32px 26px;
+    margin: 0 auto 28px;
     max-width: 1100px;
 
     border-top: 5px solid #1e6fa3;
@@ -117,7 +117,7 @@
     align-items: center;
 }
 
-/* כותרת – זהה ל-Add Flight */
+
 .cancel-card h3 {
     margin: 0 0 16px;
     font-size: 18px;
@@ -126,7 +126,7 @@
     text-align: center;
 }
 
-/* שורה אחת: input + button */
+
 .cancel-card form {
     display: flex;
     gap: 12px;
@@ -134,7 +134,7 @@
     justify-content: center;
 }
 
-/* שדה קלט */
+
 .cancel-card input {
     width: 140px;
     padding: 12px;
@@ -143,7 +143,7 @@
     font-size: 15px;
 }
 
-/* כפתור */
+
 .cancel-card button {
     background-color: #1e6fa3;
     color: white;
@@ -203,9 +203,9 @@
     justify-content: center;
 }
 
-/* 🔼 הרחבת כפתור ניהול הדוחות */
+
 .insights-section .admin-card {
-    width: 820px;      /* ⬅️ רחב יותר */
+    width: 820px;
     max-width: 100%;
     margin: 0 auto;
 }

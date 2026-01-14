@@ -49,7 +49,7 @@
                         <div style="font-size: 0.8rem; color: #7f8c8d;">{{ order.departure_time }}</div>
                     </td>
                     <td>
-                        {# התאמת צבע הסטטוס לפי סוג הביטול או ההצלחה #}
+
                         {% if order.booking_status == 'Active' %}
                             <span class="status-badge status-active">Active</span>
                         {% elif 'Cancellation' in order.booking_status %}

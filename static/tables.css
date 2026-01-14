@@ -1,4 +1,4 @@
-/* --- עיצוב כללי ומכולה --- */
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -11,7 +11,7 @@ h1, h2 {
     text-align: center;
 }
 
-/* --- סגנון 1: טבלת ניהול קלאסית (.flight-table) --- */
+/* --- (.flight-table) --- */
 .flight-table {
     width: 100%;
     border-collapse: collapse;
@@ -41,7 +41,7 @@ h1, h2 {
     background-color: #f8f9fa;
 }
 
-/* --- סגנון 2: כרטיסי טיסה ללקוחות (.booking-table) --- */
+/* --- (.booking-table) --- */
 .booking-table {
     width: 100%;
     border-collapse: separate;
@@ -105,7 +105,7 @@ h1, h2 {
     color: #7f8c8d;
 }
 
-/* --- סגנון 3: מפת מושבים משודרגת (.seat-map-wrapper) --- */
+/* --- (.seat-map-wrapper) --- */
 .seat-map-wrapper {
     background: #ffffff;
     padding: 40px;
@@ -168,7 +168,7 @@ input[type="checkbox"]:checked + .seat-item {
     width: 40px;
 }
 
-/* --- תגיות סטטוס וכפתורים --- */
+/* --- (buttons) --- */
 .status-badge {
     padding: 6px 14px;
     border-radius: 20px;
@@ -206,7 +206,7 @@ input[type="checkbox"]:checked + .seat-item {
     margin-bottom: 20px;
 }
 
-/* --- עיצוב טפסים ופרטי נוסע --- */
+/* --- forms --- */
 
 .summary-box {
     background: #f8fafc;
@@ -253,7 +253,6 @@ label {
     text-align: left;
 }
 
-/* עיצוב משודרג לכל סוגי הקלט כולל Select ו-Time */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -273,7 +272,6 @@ select {
     background-color: white;
 }
 
-/* עיצוב מיוחד לחץ בתיבות בחירה (Select) */
 select {
     cursor: pointer;
     appearance: none;
@@ -313,7 +311,6 @@ input[type="submit"].btn-large:hover {
     background: #1557b0;
 }
 
-/* התאמת תאריך לדפדפנים */
 input[type="date"]::-webkit-datetime-edit-text,
 input[type="date"]::-webkit-datetime-edit-month-field,
 input[type="date"]::-webkit-datetime-edit-day-field,
@@ -327,7 +324,6 @@ input[type="date"] {
     text-align: left;
 }
 
-/* --- עיצוב סיכום הזמנה סופי --- */
 .summary-card {
     background: white;
     border-radius: 15px;
@@ -396,7 +392,6 @@ input[type="date"] {
     transform: translateY(-2px);
 }
 
-/* --- עיצוב כרטיס עלייה למטוס (Boarding Pass) --- */
 .boarding-pass {
     background: white;
     max-width: 600px;
@@ -438,10 +433,9 @@ input[type="date"] {
     font-weight: bold;
     margin-bottom: 5px;
 }
-/* שורה אחת חובה - ללא שבירה */
 .insights-grid {
     display: flex;
-    flex-wrap: nowrap; /* מונע ירידת שורה בכל מחיר */
+    flex-wrap: nowrap;
     justify-content: space-between;
     gap: 10px;
     margin-top: 15px;
@@ -449,7 +443,7 @@ input[type="date"] {
 }
 
 .insight-card {
-    flex: 1; /* מחלק את כל הרוחב ל-5 חלקים שווים בדיוק */
+    flex: 1;
     text-align: center;
     padding: 10px 5px;
     background: #ffffff;
@@ -457,10 +451,10 @@ input[type="date"] {
     border-radius: 8px;
     text-decoration: none;
     display: flex;
-    flex-direction: column; /* אייקון מעל טקסט, אבל בקטן */
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 0; /* קריטי כדי לאפשר לכרטיס להתכווץ */
+    min-width: 0;
     transition: all 0.2s;
 }
 
@@ -476,11 +470,11 @@ input[type="date"] {
 }
 
 .insight-card h3 {
-    font-size: 0.75rem; /* פונט קטן כדי שייכנס בשורה אחת */
+    font-size: 0.75rem;
     color: #1a202c;
     margin: 0;
-    white-space: nowrap; /* מונע מהמילים להישבר */
+    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* אם המילה ארוכה מדי, יהיו 3 נקודות */
+    text-overflow: ellipsis;
     width: 100%;
 }

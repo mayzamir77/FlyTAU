@@ -9,7 +9,7 @@ body {
    HERO SECTION
    ========================= */
 .homepage-hero {
-    position: relative; /* חשוב לעיגון הכפתורים */
+    position: relative;
     background: white;
     padding: 16px 20px;
     border-radius: 18px;
