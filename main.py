@@ -1169,21 +1169,23 @@ def report_cancellations():
 
 @app.route('/reports/fleet_activity')
 def report_fleet_activity():
-    '''
-    Route to display comprehensive fleet utilization and activity logs.
-    '''
+    """
+    Route to display comprehensive fleet utilization and activity logs with filtering.
+    """
     if session.get('user_type') != 'manager':
         return redirect('/')
 
-    data = get_fleet_activity_report()
+    # קבלת ערכי הפילטרים מהטופס (GET request)
+    aircraft_id = request.args.get('aircraft_id')
+    year = request.args.get('year')
+    month = request.args.get('month')
+
+    # קבלת הנתונים המעובדים מה-DB
+    data = get_fleet_activity_report(aircraft_id, year, month)
+
     return render_template('fleet_activity_report.html',
                            title="Fleet Monthly Activity & Utilization",
-                           headers=['Aircraft ID', 'Year', 'Month', 'Completed', 'Cancelled', 'Dominant Origin',
-                                    'Dominant Dest', 'Utilization (%)'],
-                           rows=data,
-                           keys=['aircraft_id', 'year', 'month', 'completed_flights', 'cancelled_flights',
-                                 'origin_airport', 'destination_airport', 'utilization_percentage'])
-
+                           rows=data)
 if __name__=="__main__":
     app.run(debug=True)
 

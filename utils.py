@@ -1655,9 +1655,11 @@ def get_cancellation_report():
         results = cursor.fetchall()
         return results
 
-def get_fleet_activity_report():
+
+def get_fleet_activity_report(f_aircraft=None, f_year=None, f_month=None):
     """
     Summarizes monthly activity and usage efficiency for the entire aircraft fleet.
+    Includes filtering by Aircraft ID, Year, and Month.
     """
     query = """
     WITH months AS (
@@ -1707,19 +1709,33 @@ def get_fleet_activity_report():
             WHERE rc2.aircraft_id = rc.aircraft_id AND rc2.year = rc.year AND rc2.month = rc.month
         )
     )
-    SELECT
-        am.aircraft_id, am.year, am.month,
-        ma.completed_flights, ma.cancelled_flights, ma.active_days,
-        ROUND(COALESCE(ma.active_days, 0) * 100.0 / 30, 2) AS utilization_percentage,
-        dr.origin_airport, dr.destination_airport
-    FROM aircraft_months am
-    LEFT JOIN monthly_activity ma ON am.aircraft_id = ma.aircraft_id AND am.year = ma.year AND am.month = ma.month
-    LEFT JOIN dominant_routes dr ON am.aircraft_id = dr.aircraft_id AND am.year = dr.year AND am.month = dr.month
-    WHERE (am.year < YEAR(CURDATE())) OR (am.year = YEAR(CURDATE()) AND am.month < MONTH(CURDATE()))
-    ORDER BY am.aircraft_id, am.year, am.month;
+    SELECT * FROM (
+        SELECT
+            am.aircraft_id, am.year, am.month,
+            ma.completed_flights, ma.cancelled_flights, ma.active_days,
+            ROUND(COALESCE(ma.active_days, 0) * 100.0 / 30, 2) AS utilization_percentage,
+            dr.origin_airport, dr.destination_airport
+        FROM aircraft_months am
+        LEFT JOIN monthly_activity ma ON am.aircraft_id = ma.aircraft_id AND am.year = ma.year AND am.month = ma.month
+        LEFT JOIN dominant_routes dr ON am.aircraft_id = dr.aircraft_id AND am.year = dr.year AND am.month = dr.month
+        WHERE (am.year < YEAR(CURDATE())) OR (am.year = YEAR(CURDATE()) AND am.month < MONTH(CURDATE()))
+    ) AS final_report
+    WHERE 1=1
     """
 
+    params = []
+    if f_aircraft and f_aircraft.strip():
+        query += " AND aircraft_id = %s"
+        params.append(f_aircraft.strip())
+    if f_year and f_year.strip():
+        query += " AND year = %s"
+        params.append(f_year)
+    if f_month and f_month.strip():
+        query += " AND month = %s"
+        params.append(f_month)
+
+    query += " ORDER BY aircraft_id, year, month"
+
     with db_cur() as cursor:
-        cursor.execute(query)
-        results = cursor.fetchall()
-        return results
+        cursor.execute(query, params)
+        return cursor.fetchall()
