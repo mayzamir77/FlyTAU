@@ -447,15 +447,6 @@ def cancel_booking_in_db(booking_id, cancellation_fee):
             (cancellation_fee, booking_id)
         )
 
-        # Free up the seats associated with this booking
-        cursor.execute(
-            """
-            DELETE FROM selected_seats_in_booking
-            WHERE booking_id = %s
-            """,
-            (booking_id,)
-        )
-
 # ----my_orders functions----
 
 def get_all_bookings_for_customer(email):
@@ -1163,12 +1154,24 @@ def create_new_flight_complete(f_data, pilot_ids, attendant_ids, prices):
 
 # ----show_flight_board functions----
 
-def update_completed_flights():
+def update_past_flights_and_bookings():
     """
-    Automatically updates flight status to 'Completed' for flights that have already landed.
+    Automatically updates flight and booking status to 'Completed'
+    for flights that have already landed.
     """
     with db_cur() as cursor:
-        query = """
+        query_bookings = """
+        UPDATE booking b
+        JOIN flight f ON b.flight_id = f.flight_id
+        JOIN routes r ON f.origin_airport = r.origin_airport 
+                      AND f.destination_airport = r.destination_airport
+        SET b.booking_status = 'Completed'
+        WHERE b.booking_status = 'Active'
+        AND TIMESTAMP(f.departure_date, f.departure_time) + INTERVAL r.flight_duration_mins MINUTE < NOW()
+        """
+        cursor.execute(query_bookings)
+
+        query_flights = """
         UPDATE flight f
         JOIN routes r ON f.origin_airport = r.origin_airport 
                       AND f.destination_airport = r.destination_airport
@@ -1176,7 +1179,7 @@ def update_completed_flights():
         WHERE f.flight_status IN ('Active', 'Fully Booked')
         AND TIMESTAMP(f.departure_date, f.departure_time) + INTERVAL r.flight_duration_mins MINUTE < NOW()
         """
-        cursor.execute(query)
+        cursor.execute(query_flights)
 
 def flight_board(status_filter):
     """
