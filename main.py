@@ -828,7 +828,7 @@ def show_flight_board():
     - Other users can only see 'Active' flights.
     - Automatically updates flights to 'Completed' if they have already landed.
     """
-    update_completed_flights()
+    update_past_flights_and_bookings()
     user_type = session.get('user_type')
 
     # Determine status filter based on user role
