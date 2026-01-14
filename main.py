@@ -430,10 +430,10 @@ def manage_booking():
         if session.get('user_type') == 'customer':
             return render_template('customer_homepage.html', name=session.get('user_first_name'),
                                    origins=origins, destinations=destinations, today=today_str,
-                                   manage_booking_error=error_text)
+                                   error=error_text)
 
         return render_template('homepage.html', origins=origins, destinations=destinations,
-                               today=today_str, manage_booking_error=error_text)
+                               today=today_str, error=error_text)
 
     # Validation: Only active bookings can be managed
     if booking.booking_status != 'Active':
@@ -445,10 +445,10 @@ def manage_booking():
         if session.get('user_type') == 'customer':
             return render_template('customer_homepage.html', name=session.get('user_first_name'),
                                    origins=origins, destinations=destinations, today=today_str,
-                                   manage_booking_error=error_msg)
+                                   error=error_msg)
 
         return render_template('homepage.html', origins=origins, destinations=destinations,
-                               today=today_str, manage_booking_error=error_msg)
+                               today=today_str, error=error_msg)
 
     # Calculations for the management view
     departure_date = booking.departure_date
