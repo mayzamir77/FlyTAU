@@ -275,6 +275,35 @@ INSERT INTO `guest_customer_phones` VALUES ('alice.w@gmail.com','0504445566'),('
 UNLOCK TABLES;
 
 --
+-- Table structure for table `manager_flight_actions`
+--
+
+DROP TABLE IF EXISTS `manager_flight_actions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `manager_flight_actions` (
+  `manager_id` varchar(50) NOT NULL,
+  `flight_id` int NOT NULL,
+  `action_type` enum('Add','Cancel') NOT NULL,
+  `action_date` date NOT NULL,
+  PRIMARY KEY (`manager_id`,`flight_id`,`action_date`),
+  KEY `fk_flight` (`flight_id`),
+  CONSTRAINT `fk_flight` FOREIGN KEY (`flight_id`) REFERENCES `flight` (`flight_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_manager` FOREIGN KEY (`manager_id`) REFERENCES `managers` (`manager_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `manager_flight_actions`
+--
+
+LOCK TABLES `manager_flight_actions` WRITE;
+/*!40000 ALTER TABLE `manager_flight_actions` DISABLE KEYS */;
+INSERT INTO `manager_flight_actions` VALUES ('M1',5,'Add','2025-09-17'),('M1',10,'Add','2025-11-17'),('M1',15,'Add','2025-12-27'),('M1',20,'Add','2026-03-22'),('M1',25,'Add','2026-06-06'),('M1',30,'Add','2026-08-27'),('M1',35,'Add','2026-11-17'),('M1',39,'Cancel','2026-08-11'),('M1',40,'Add','2026-10-06'),('M2',1,'Add','2025-07-27'),('M2',6,'Add','2025-09-28'),('M2',11,'Add','2025-11-26'),('M2',16,'Add','2026-02-01'),('M2',21,'Add','2026-04-04'),('M2',26,'Add','2026-06-17'),('M2',31,'Add','2026-09-11'),('M2',36,'Add','2026-02-06'),('M2',38,'Cancel','2026-06-04'),('M2',41,'Add','2026-06-28'),('M3',2,'Add','2025-08-06'),('M3',7,'Add','2025-10-11'),('M3',12,'Add','2025-12-06'),('M3',17,'Add','2026-02-14'),('M3',22,'Add','2026-04-17'),('M3',27,'Add','2026-07-01'),('M3',32,'Add','2026-09-26'),('M3',37,'Add','2026-04-11'),('M3',37,'Cancel','2026-04-24'),('M4',3,'Add','2025-08-22'),('M4',8,'Add','2025-10-22'),('M4',13,'Add','2025-12-14'),('M4',18,'Add','2026-02-24'),('M4',23,'Add','2026-05-01'),('M4',28,'Add','2026-07-22'),('M4',33,'Add','2026-10-18'),('M4',36,'Cancel','2026-02-19'),('M4',38,'Add','2026-05-22'),('M5',4,'Add','2025-09-01'),('M5',9,'Add','2025-11-04'),('M5',14,'Add','2025-12-22'),('M5',19,'Add','2026-03-08'),('M5',24,'Add','2026-05-19'),('M5',29,'Add','2026-08-06'),('M5',34,'Add','2026-11-01'),('M5',39,'Add','2026-07-29'),('M5',40,'Cancel','2026-10-19');
+/*!40000 ALTER TABLE `manager_flight_actions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `managers`
 --
 
@@ -508,4 +537,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-01-14 18:14:38
+-- Dump completed on 2026-01-14 20:12:51
