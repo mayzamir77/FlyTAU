@@ -12,7 +12,7 @@
 </head>
 <body>
 
-    <header class="main-header">
+<header class="main-header">
     <div class="header-left">
         {% block header_left %}{% endblock %}
     </div>
@@ -32,19 +32,22 @@
     </div>
 </header>
 
+<main class="page-content">
+    <div class="container">
 
-    <main class="page-content">
-        <div class="container">
+        {% if not disable_global_error %}
             {% if error %}
-            <div style="background-color: #fff5f5; border: 1px solid #feb2b2; color: #c53030; padding: 15px; border-radius: 8px; margin-top: 20px; margin-bottom: 20px; text-align: center;">
-                <strong style="display: block; font-size: 1.1rem; margin-bottom: 5px;">⚠ Error</strong>
-                {{ error }}
-            </div>
+                <div style="background-color: #fff5f5; border: 1px solid #feb2b2; color: #c53030; padding: 15px; border-radius: 8px; margin-top: 20px; margin-bottom: 20px; text-align: center;">
+                    <strong style="display: block; font-size: 1.1rem; margin-bottom: 5px;">⚠ Error</strong>
+                    {{ error }}
+                </div>
             {% endif %}
+        {% endif %}
 
-            {% block content %}{% endblock %}
-        </div>
-    </main>
+        {% block content %}{% endblock %}
+
+    </div>
+</main>
 
 </body>
 </html>

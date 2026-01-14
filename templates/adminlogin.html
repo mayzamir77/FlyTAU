@@ -6,12 +6,6 @@
 <div class="container">
     <h1 style="margin-bottom: 30px;">Admin Access Only</h1>
 
-    {% if error %}
-        <div class="error">
-            <strong>Access Denied:</strong> {{ error }}
-        </div>
-    {% endif %}
-
     <div style="max-width: 450px; margin: 0 auto;">
         <form action="/adminlogin" method="POST">
             <fieldset style="border-top: 5px solid #2c3e50;"> <legend>
