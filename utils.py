@@ -1480,3 +1480,243 @@ def is_id_exists(staff_id):
 
     return False
 
+
+# ----Management Reports Functions----
+
+
+def get_flight_occupancy_report():
+    """
+    Calculates the occupancy percentage for each completed flight.
+    """
+    query = """
+    SELECT 
+        capacity_table.flight_id,
+        ROUND(COALESCE((occupied_table.occupied_seats / capacity_table.total_capacity) * 100, 0), 2) AS occupancy_percentage
+    FROM 
+        (SELECT f.flight_id, COUNT(*) AS total_capacity
+         FROM flight AS f 
+         JOIN seat AS s ON f.aircraft_id = s.aircraft_id
+         WHERE f.flight_status = 'Completed'
+         GROUP BY f.flight_id) AS capacity_table 
+    LEFT JOIN
+        (SELECT b.flight_id, COUNT(*) AS occupied_seats
+         FROM booking AS b 
+         JOIN selected_seats_in_booking AS ss ON b.booking_id = ss.booking_id
+         WHERE b.booking_status != 'Customer Cancellation'
+         GROUP BY b.flight_id) AS occupied_table
+    ON capacity_table.flight_id = occupied_table.flight_id;
+    """
+    with db_cur() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return results
+
+
+def get_revenue_report():
+    """
+    Provides a financial breakdown of revenue based on aircraft and cabin class.
+    """
+    query = """
+    SELECT 
+        a.size AS Size, 
+        a.manufacturer AS Manufacturer, 
+        c.class_type AS Class, 
+        SUM(IFNULL(booked_seats_prices.calculated_revenue, 0)) AS Revenue
+    FROM aircraft AS a
+    JOIN class AS c ON a.aircraft_id = c.aircraft_id
+    LEFT JOIN (
+        SELECT 
+            b.flight_id, 
+            ss.aircraft_id, 
+            ss.class_type, 
+            CASE 
+                WHEN b.booking_status IN ('Completed', 'Active') THEN cif.seat_price
+                WHEN b.booking_status = 'Customer Cancellation' THEN cif.seat_price * 0.05
+                ELSE 0 
+            END AS calculated_revenue
+        FROM selected_seats_in_booking AS ss
+        JOIN booking AS b ON ss.booking_id = b.booking_id
+        JOIN classes_in_flight AS cif ON b.flight_id = cif.flight_id 
+                                      AND ss.class_type = cif.class_type
+        WHERE b.booking_status NOT IN ('System Cancellation') 
+    ) AS booked_seats_prices ON a.aircraft_id = booked_seats_prices.aircraft_id 
+                             AND c.class_type = booked_seats_prices.class_type
+    GROUP BY a.size, a.manufacturer, c.class_type;
+    """
+    with db_cur() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return results
+
+
+def get_staff_hours_report():
+    '''
+    Aggregates cumulative flight hours for airline crew members.
+    Categorizes work into 'Short Flights' and 'Long Flights'
+    '''
+    query = """
+    SELECT
+        p.pilot_id AS employee_id,
+        CONCAT(p.first_name_hebrew, ' ', p.last_name_hebrew) AS full_name,
+        'Pilot' AS role,
+        'Short Flights' AS work_type,
+        COALESCE(SUM(r.flight_duration_mins), 0) / 60.0 AS total_hours
+    FROM pilots p
+    LEFT JOIN pilots_assignment pa ON p.pilot_id = pa.pilot_id
+    LEFT JOIN flight f ON pa.flight_id = f.flight_id
+    LEFT JOIN routes r ON f.origin_airport = r.origin_airport AND f.destination_airport = r.destination_airport
+       AND r.flight_duration_mins <= 360
+    GROUP BY p.pilot_id, p.first_name_hebrew, p.last_name_hebrew
+    UNION ALL
+    SELECT
+        p.pilot_id,
+        CONCAT(p.first_name_hebrew, ' ', p.last_name_hebrew),
+        'Pilot',
+        'Long Flights',
+        COALESCE(SUM(r.flight_duration_mins), 0) / 60.0
+    FROM pilots p
+    LEFT JOIN pilots_assignment pa ON p.pilot_id = pa.pilot_id
+    LEFT JOIN flight f ON pa.flight_id = f.flight_id
+    LEFT JOIN routes r ON f.origin_airport = r.origin_airport AND f.destination_airport = r.destination_airport
+       AND r.flight_duration_mins > 360
+    WHERE p.long_flight_certified = 1
+    GROUP BY p.pilot_id, p.first_name_hebrew, p.last_name_hebrew
+    UNION ALL
+    SELECT
+        fa.attendant_id,
+        CONCAT(fa.first_name_hebrew, ' ', fa.last_name_hebrew),
+        'Flight Attendant',
+        'Short Flights',
+        COALESCE(SUM(r.flight_duration_mins), 0) / 60.0
+    FROM flight_attendants fa
+    LEFT JOIN flight_attendants_assignment faa ON fa.attendant_id = faa.attendant_id
+    LEFT JOIN flight f ON faa.flight_id = f.flight_id
+    /* כאן הוספתי את ה-ON שהיה חסר */
+    LEFT JOIN routes r ON f.origin_airport = r.origin_airport AND f.destination_airport = r.destination_airport
+       AND r.flight_duration_mins <= 360
+    GROUP BY fa.attendant_id, fa.first_name_hebrew, fa.last_name_hebrew
+    UNION ALL
+    SELECT
+        fa.attendant_id,
+        CONCAT(fa.first_name_hebrew, ' ', fa.last_name_hebrew),
+        'Flight Attendant',
+        'Long Flights',
+        COALESCE(SUM(r.flight_duration_mins), 0) / 60.0
+    FROM flight_attendants fa
+    LEFT JOIN flight_attendants_assignment faa ON fa.attendant_id = faa.attendant_id
+    LEFT JOIN flight f ON faa.flight_id = f.flight_id
+    LEFT JOIN routes r ON f.origin_airport = r.origin_airport AND f.destination_airport = r.destination_airport
+       AND r.flight_duration_mins > 360
+    WHERE fa.long_flight_certified = 1
+    GROUP BY fa.attendant_id, fa.first_name_hebrew, fa.last_name_hebrew
+    ORDER BY employee_id, work_type DESC;
+    """
+
+    with db_cur() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return results
+
+
+def get_cancellation_report():
+    """
+    Analyzes customer booking cancellation rates on a monthly basis.
+    """
+    query = """
+    SELECT
+        YEAR(booking_date) AS year,
+        MONTH(booking_date) AS month,
+        SUM(
+            CASE
+                WHEN booking_status = 'Customer Cancellation' THEN 1
+                ELSE 0
+            END
+        ) AS cancelled_bookings,
+        COUNT(*) AS total_bookings,
+        ROUND(
+            SUM(
+                CASE
+                    WHEN booking_status = 'Customer Cancellation' THEN 1
+                    ELSE 0
+                END
+            ) * 100.0 / COUNT(*),
+            2
+        ) AS cancellation_rate_percentage
+    FROM booking
+    GROUP BY YEAR(booking_date), MONTH(booking_date)
+    ORDER BY year, month;
+    """
+
+    with db_cur() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return results
+
+def get_fleet_activity_report():
+    """
+    Summarizes monthly activity and usage efficiency for the entire aircraft fleet.
+    """
+    query = """
+    WITH months AS (
+        SELECT YEAR(CURDATE()) - 1 AS year, 1 AS month UNION ALL
+        SELECT YEAR(CURDATE()) - 1, 2 UNION ALL
+        SELECT YEAR(CURDATE()) - 1, 3 UNION ALL
+        SELECT YEAR(CURDATE()) - 1, 4 UNION ALL
+        SELECT YEAR(CURDATE()) - 1, 5 UNION ALL
+        SELECT YEAR(CURDATE()) - 1, 6 UNION ALL
+        SELECT YEAR(CURDATE()) - 1, 7 UNION ALL
+        SELECT YEAR(CURDATE()) - 1, 8 UNION ALL
+        SELECT YEAR(CURDATE()) - 1, 9 UNION ALL
+        SELECT YEAR(CURDATE()) - 1, 10 UNION ALL
+        SELECT YEAR(CURDATE()) - 1, 11 UNION ALL
+        SELECT YEAR(CURDATE()) - 1, 12
+    ),
+    aircraft_months AS (
+        SELECT a.aircraft_id, m.year, m.month
+        FROM aircraft a CROSS JOIN months m
+    ),
+    monthly_activity AS (
+        SELECT
+            f.aircraft_id,
+            YEAR(f.departure_date) AS year,
+            MONTH(f.departure_date) AS month,
+            COUNT(DISTINCT CASE WHEN f.flight_status = 'COMPLETED' THEN DATE(f.departure_date) END) AS active_days,
+            SUM(CASE WHEN f.flight_status = 'COMPLETED' THEN 1 ELSE 0 END) AS completed_flights,
+            SUM(CASE WHEN f.flight_status = 'CANCELLED' THEN 1 ELSE 0 END) AS cancelled_flights
+        FROM flight f
+        WHERE f.departure_date < DATE_FORMAT(CURDATE(), '%Y-%m-01')
+        GROUP BY f.aircraft_id, YEAR(f.departure_date), MONTH(f.departure_date)
+    ),
+    route_counts AS (
+        SELECT
+            aircraft_id, YEAR(departure_date) AS year, MONTH(departure_date) AS month,
+            origin_airport, destination_airport, COUNT(*) AS route_count
+        FROM flight
+        WHERE flight_status = 'COMPLETED' AND departure_date < DATE_FORMAT(CURDATE(), '%Y-%m-01')
+        GROUP BY aircraft_id, YEAR(departure_date), MONTH(departure_date), origin_airport, destination_airport
+    ),
+    dominant_routes AS (
+        SELECT rc.*
+        FROM route_counts rc
+        WHERE rc.route_count = (
+            SELECT MAX(rc2.route_count)
+            FROM route_counts rc2
+            WHERE rc2.aircraft_id = rc.aircraft_id AND rc2.year = rc.year AND rc2.month = rc.month
+        )
+    )
+    SELECT
+        am.aircraft_id, am.year, am.month,
+        ma.completed_flights, ma.cancelled_flights, ma.active_days,
+        ROUND(COALESCE(ma.active_days, 0) * 100.0 / 30, 2) AS utilization_percentage,
+        dr.origin_airport, dr.destination_airport
+    FROM aircraft_months am
+    LEFT JOIN monthly_activity ma ON am.aircraft_id = ma.aircraft_id AND am.year = ma.year AND am.month = ma.month
+    LEFT JOIN dominant_routes dr ON am.aircraft_id = dr.aircraft_id AND am.year = dr.year AND am.month = dr.month
+    WHERE (am.year < YEAR(CURDATE())) OR (am.year = YEAR(CURDATE()) AND am.month < MONTH(CURDATE()))
+    ORDER BY am.aircraft_id, am.year, am.month;
+    """
+
+    with db_cur() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return results

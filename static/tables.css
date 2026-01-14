@@ -438,3 +438,49 @@ input[type="date"] {
     font-weight: bold;
     margin-bottom: 5px;
 }
+/* שורה אחת חובה - ללא שבירה */
+.insights-grid {
+    display: flex;
+    flex-wrap: nowrap; /* מונע ירידת שורה בכל מחיר */
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 15px;
+    width: 100%;
+}
+
+.insight-card {
+    flex: 1; /* מחלק את כל הרוחב ל-5 חלקים שווים בדיוק */
+    text-align: center;
+    padding: 10px 5px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column; /* אייקון מעל טקסט, אבל בקטן */
+    align-items: center;
+    justify-content: center;
+    min-width: 0; /* קריטי כדי לאפשר לכרטיס להתכווץ */
+    transition: all 0.2s;
+}
+
+.insight-card:hover {
+    border-color: #1a73e8;
+    background-color: #f8faff;
+    transform: translateY(-2px);
+}
+
+.insight-icon {
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+}
+
+.insight-card h3 {
+    font-size: 0.75rem; /* פונט קטן כדי שייכנס בשורה אחת */
+    color: #1a202c;
+    margin: 0;
+    white-space: nowrap; /* מונע מהמילים להישבר */
+    overflow: hidden;
+    text-overflow: ellipsis; /* אם המילה ארוכה מדי, יהיו 3 נקודות */
+    width: 100%;
+}

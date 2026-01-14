@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Fleet Activity Report{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
+
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 30px;">
+
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px;">
+        <div>
+            <h2 style="color: #2c3e50; border-right: 5px solid #1a73e8; padding-right: 15px; margin-bottom: 5px;">Fleet Monthly Activity & Utilization</h2>
+            <p style="color: #7f8c8d;">Monthly performance summary, dominant routes, and aircraft utilization rates</p>
+        </div>
+    </div>
+
+    <div class="table-container" style="background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); overflow-x: auto; border: 1px solid #eee;">
+        <table style="width: 100%; border-collapse: collapse; min-width: 1000px;">
+            <thead>
+                <tr style="background-color: #1a73e8; color: white; text-align: left;">
+                    <th style="padding: 15px;">Aircraft ID</th>
+                    <th style="padding: 15px;">Year</th>
+                    <th style="padding: 15px;">Month</th>
+                    <th style="padding: 15px; text-align: center;">Completed</th>
+                    <th style="padding: 15px; text-align: center;">Cancelled</th>
+                    <th style="padding: 15px;">Dominant Route</th>
+                    <th style="padding: 15px; text-align: right;">Utilization</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr style="border-bottom: 1px solid #eee; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#f8faff'" onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="padding: 15px; font-weight: bold; color: #1a73e8;">{{ row[0] }}</td>
+                    <td style="padding: 15px;">{{ row[1] }}</td>
+                    <td style="padding: 15px; color: #4a5568;">{{ row[2] }}</td>
+                    <td style="padding: 15px; text-align: center; color: #27ae60; font-weight: 600;">{{ row[3] }}</td>
+                    <td style="padding: 15px; text-align: center; color: #e53e3e;">{{ row[4] }}</td>
+                    <td style="padding: 15px; font-size: 0.9rem;">
+                        {% if row[5] and row[6] %}
+                            {{ row[5] }} → {{ row[6] }}
+                        {% else %}
+                            <span style="color: #cbd5e0;">No data</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 15px; text-align: right;">
+                        <span style="font-size: 1.1rem; font-weight: bold; color: #2c3e50;">
+                            {{ "{:.1f}".format(row[7]) if row[7] else "0.0" }}%
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center;">
+        <a href="/admin_homepage" style="color: #64748b; text-decoration: none; font-size: 0.9rem;">← Back to Home Page</a>
+        <button onclick="window.print()" class="btn-filter" style="background: #ecf0f1; color: #2c3e50; border: 1px solid #bdc3c7;">
+            Print Detailed Report
+        </button>
+    </div>
+</div>
+{% endblock %}
