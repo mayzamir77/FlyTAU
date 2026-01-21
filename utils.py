@@ -1189,7 +1189,7 @@ def update_past_flights_and_bookings():
                       AND f.destination_airport = r.destination_airport
         SET b.booking_status = 'Completed'
         WHERE b.booking_status = 'Active'
-        AND TIMESTAMP(f.departure_date, f.departure_time) + INTERVAL r.flight_duration_mins MINUTE < NOW()
+        AND TIMESTAMP(f.departure_date, f.departure_time) < NOW()
         """
         cursor.execute(query_bookings)
 
@@ -1199,7 +1199,7 @@ def update_past_flights_and_bookings():
                       AND f.destination_airport = r.destination_airport
         SET f.flight_status = 'Completed'
         WHERE f.flight_status IN ('Active', 'Fully Booked')
-        AND TIMESTAMP(f.departure_date, f.departure_time) + INTERVAL r.flight_duration_mins MINUTE < NOW()
+        AND TIMESTAMP(f.departure_date, f.departure_time) < NOW()
         """
         cursor.execute(query_flights)
 
