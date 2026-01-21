@@ -66,7 +66,7 @@ def registered_customer_exists(email):
     Checks if an email is already registered in the Registered_Customer table.
     """
     with db_cur() as cursor:
-        cursor.execute("SELECT 1 FROM Registered_Customer WHERE email = %s", (email,))
+        cursor.execute("SELECT 1 FROM registered_customer WHERE email = %s", (email,))
         result = cursor.fetchone()
         return result is not None
 
@@ -75,7 +75,7 @@ def check_password_customer(email, password):
     Validates if the provided email and password match a record in Registered_Customer.
     """
     with db_cur() as cursor:
-        cursor.execute("SELECT 1 FROM Registered_Customer WHERE email = %s and customer_password= %s", (email,password))
+        cursor.execute("SELECT 1 FROM registered_customer WHERE email = %s and customer_password= %s", (email,password))
         result = cursor.fetchone()
         return result is not None
 
@@ -158,7 +158,7 @@ def add_customer_to_db(email,first_name,last_name,passport_number,birth_date,reg
     Inserts a new registered customer and their phone numbers directly into the database.
     """
     with db_cur() as cursor:
-        cursor.execute("INSERT INTO Registered_Customer VALUES (%s,%s,%s,%s,%s,%s,%s)",
+        cursor.execute("INSERT INTO registered_customer VALUES (%s,%s,%s,%s,%s,%s,%s)",
                        (email, first_name, last_name, passport_number, birth_date, registration_date, password))
         for p in phones:
             cursor.execute("INSERT INTO registered_customer_phones VALUES(%s,%s)",(email,p))
@@ -494,7 +494,7 @@ def admin_exists(id):
     Uses 'SELECT 1' for optimized performance as we only need to verify existence.
     """
     with db_cur() as cursor:
-        cursor.execute("SELECT 1 FROM Managers WHERE manager_id = %s", (id,))
+        cursor.execute("SELECT 1 FROM managers WHERE manager_id = %s", (id,))
         result = cursor.fetchone()
         return result is not None
 
@@ -504,7 +504,7 @@ def check_password_manager(id, password):
     Returns True if a matching record is found, False otherwise.
     """
     with db_cur() as cursor:
-        cursor.execute("SELECT 1 FROM Managers WHERE manager_id = %s AND manager_password = %s", (id, password))
+        cursor.execute("SELECT 1 FROM managers WHERE manager_id = %s AND manager_password = %s", (id, password))
         result = cursor.fetchone()
         return result is not None
 
@@ -1449,10 +1449,10 @@ def get_all_staff():
     with db_cur() as cursor:
         query = """
         SELECT pilot_id AS staff_id, first_name_hebrew, last_name_hebrew, phone, city, street, house_number, start_date, long_flight_certified, 'Pilot' as role
-        FROM Pilots
+        FROM pilots
         UNION
         SELECT attendant_id AS staff_id, first_name_hebrew, last_name_hebrew, phone, city, street, house_number, start_date, long_flight_certified, 'Flight Attendant' as role
-        FROM Flight_attendants
+        FROM flight_attendants
         """
         cursor.execute(query)
         result=cursor.fetchall()
@@ -1461,13 +1461,13 @@ def get_all_staff():
 def get_pilots_only():
     """Fetches all rows from the Pilots table with a constant 'Pilot' role label."""
     with db_cur() as cursor:
-        cursor.execute("SELECT pilot_id, first_name_hebrew, last_name_hebrew, phone, city, street, house_number, start_date, long_flight_certified, 'Pilot' as role FROM Pilots")
+        cursor.execute("SELECT pilot_id, first_name_hebrew, last_name_hebrew, phone, city, street, house_number, start_date, long_flight_certified, 'Pilot' as role FROM pilots")
         return cursor.fetchall()
 
 def get_attendants_only():
     """Fetches all rows from the Flight_attendants table with a constant 'Flight Attendant' role label."""
     with db_cur() as cursor:
-        cursor.execute("SELECT attendant_id, first_name_hebrew, last_name_hebrew, phone, city, street, house_number, start_date, long_flight_certified, 'Flight Attendant' as role FROM Flight_attendants")
+        cursor.execute("SELECT attendant_id, first_name_hebrew, last_name_hebrew, phone, city, street, house_number, start_date, long_flight_certified, 'Flight Attendant' as role FROM flight_attendants")
         return cursor.fetchall()
 
 # ----add_staff functions----
@@ -1481,7 +1481,7 @@ def add_crew_to_db(table, id, f_name, l_name, phone, city, street, h_num, s_date
     id_column_name = "pilot_id" if table == "Pilots" else "attendant_id"
     with db_cur() as cursor:
         query = f"""
-                INSERT INTO {table} 
+                INSERT INTO {table.lower()} 
                 ({id_column_name}, first_name_hebrew, last_name_hebrew, phone, city, street, house_number, start_date, long_flight_certified)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
@@ -1495,11 +1495,14 @@ def is_id_exists(staff_id):
     """
     with db_cur() as cursor:
         # Check Pilots table
-        cursor.execute("SELECT pilot_id FROM Pilots WHERE pilot_id = %s", (staff_id,))
+        cursor.execute("SELECT pilot_id FROM pilots WHERE pilot_id = %s", (staff_id,))
         if cursor.fetchone():
             return True
         # Check Flight Attendants table
-        cursor.execute("SELECT attendant_id FROM Flight_attendants WHERE attendant_id = %s", (staff_id,))
+        cursor.execute("SELECT attendant_id FROM flight_attendants WHERE attendant_id = %s", (staff_id,))
+        if cursor.fetchone():
+            return True
+        cursor.execute("SELECT manager_id FROM managers WHERE manager_id = %s", (staff_id,))
         if cursor.fetchone():
             return True
 
@@ -1616,7 +1619,6 @@ def get_staff_hours_report():
     FROM flight_attendants fa
     LEFT JOIN flight_attendants_assignment faa ON fa.attendant_id = faa.attendant_id
     LEFT JOIN flight f ON faa.flight_id = f.flight_id
-    /* כאן הוספתי את ה-ON שהיה חסר */
     LEFT JOIN routes r ON f.origin_airport = r.origin_airport AND f.destination_airport = r.destination_airport
        AND r.flight_duration_mins <= 360
     GROUP BY fa.attendant_id, fa.first_name_hebrew, fa.last_name_hebrew
